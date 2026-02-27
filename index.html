@@ -207,6 +207,8 @@
       height: auto;
       padding: 8px 32px;
       border-radius: 10px;
+      will-change: transform;
+      isolation: isolate;
     }
 
     .primary-btn:hover {
@@ -403,6 +405,8 @@
       border: 1px solid var(--border-subtle);
       background: rgba(5, 7, 18, 0.6);
       overflow: hidden;
+      isolation: isolate;
+      transform: translateZ(0);
     }
 
     #regionMap {
