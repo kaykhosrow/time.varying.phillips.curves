@@ -1,210 +1,690 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2575.7">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
-    span.s1 {font-kerning: none}
+  <meta charset="UTF-8">
+  <title>Time-Varying Phillips Curves</title>
+
+  <!-- Plotly -->
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <!-- Dark, minimal styling -->
+  <style>
+    :root {
+      --bg: #05060a;
+      --card-bg: #111320;
+      --card-bg-soft: #15182a;
+      --accent: #31e1ff;
+      --accent-soft: rgba(49, 225, 255, 0.18);
+      --text-main: #f5f5f7;
+      --text-subtle: #9ca3af;
+      --border-subtle: #25273a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      overflow: hidden;
+      height: 100%;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #15192b 0, #05060a 55%);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 1000px;
+    }
+
+    .main-shell {
+      width: min(1120px, 100% - 40px);
+      margin: 40px auto;
+      flex-shrink: 0;
+      transform: scale(1.05);
+      transform-origin: center center;
+    }
+
+    .card {
+      background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+      padding: 24px 28px;
+      backdrop-filter: blur(14px);
+    }
+
+    #landing {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    h1, h2 {
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+
+    p {
+      margin: 8px 0;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(49, 225, 255, 0.09);
+      border: 1px solid rgba(49, 225, 255, 0.18);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 18px;
+      margin-top: 24px;
+      align-items: flex-end;
+    }
+
+    .app-controls-row {
+      margin-top: 32px;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+    }
+
+    .app-controls-row .control-group {
+      flex: 1 1 0;
+    }
+
+    .app-controls-row .control-group select {
+      width: 100%;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
+    .control-label {
+      font-size: 0.8rem;
+      color: var(--text-subtle);
+      margin-left: 5px;
+    }
+
+    .control-group select { width: 220px; }
+
+    select {
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: #050712;
+      color: var(--text-main);
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease,
+                  background 0.2s ease, transform 0.05s ease;
+    }
+
+    select:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.35);
+      background: #070918;
+    }
+
+    button {
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: #050712;
+      color: var(--text-main);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease,
+                  background 0.2s ease, transform 0.05s ease;
+      white-space: nowrap;
+      height: 36px;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.35);
+      background: #070918;
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.2);
+    }
+
+    .primary-btn {
+      background: radial-gradient(circle at 0 0,
+                    rgba(49, 225, 255, 0.28), transparent 55%),
+                  linear-gradient(135deg, #0d90b8, #31e1ff);
+      border: none;
+      color: #05060a;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+    }
+
+    .primary-btn:hover {
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
+      transform: translateY(-1px);
+      border: none;
+      background: radial-gradient(circle at 0 0,
+                    rgba(49, 225, 255, 0.35), transparent 55%),
+                  linear-gradient(135deg, #10a4cf, #4ae5ff);
+    }
+
+    .primary-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+    }
+
+    .landing-region-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .landing-region-group .control-label { margin: 0; }
+
+    #landing .controls-row {
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pill-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(49, 225, 255, 0.09);
+      border: 1px solid rgba(49, 225, 255, 0.18);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      height: auto;
+      box-shadow: none;
+      width: 80px;
+    }
+
+    .pill-button:hover {
+      background: rgba(49, 225, 255, 0.14);
+      border-color: rgba(49, 225, 255, 0.28);
+      color: var(--accent);
+      transform: none;
+      box-shadow: 0 0 12px rgba(49, 225, 255, 0.25);
+    }
+
+    #landing, #app {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    #landing.active, #app.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      gap: 12px;
+    }
+
+    .app-header-right {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .plot-shell {
+      margin-top: 18px;
+      display: flex;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    #plot {
+      flex: 1 1 auto;
+      min-height: 520px;
+      border-radius: 14px;
+      background: #050712;
+      padding: 6px 18px 6px 6px;
+      overflow: hidden;
+    }
+
+    .slider-shell {
+      width: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .slider-column {
+      width: 100%;
+      flex: 1 1 auto;
+      border-radius: 14px;
+      background: radial-gradient(circle at top,
+                  rgba(49,225,255,0.1), transparent 55%);
+      border: 1px solid var(--border-subtle);
+      padding: 10px 4px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slider-wrapper {
+      width: 100%;
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      position: relative;
+    }
+
+    #bandwidthSlider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 200px;        /* sensible CSS default; JS will override */
+      height: 6px;
+      background: #0b0e1b;
+      border-radius: 999px;
+      outline: none;
+      transform: rotate(-90deg);
+      cursor: pointer;
+      position: absolute;
+      flex-shrink: 0;
+    }
+
+    #bandwidthSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(49, 225, 255, 0.8);
+      border: 1px solid #02141b;
+    }
+
+    #bandwidthSlider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+    }
+
+    #bandwidthSlider::-webkit-slider-runnable-track { border-radius: 999px; }
+
+    #bandwidthSlider::-moz-range-track {
+      border-radius: 999px;
+      background: #0b0e1b;
+      height: 6px;
+    }
+
+    .slider-value-pill {
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 0 0,
+                    rgba(49, 225, 255, 0.25), transparent 60%),
+                  linear-gradient(135deg, #0d90b8, #31e1ff);
+      color: #05060a;
+      border: none;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      width: 110px;
+      text-align: center;
+    }
+
   </style>
 </head>
+
 <body>
-<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;html&gt;</span></p>
-<p class="p1"><span class="s1">&lt;head&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;title&gt;Time-Varying Phillips Curve Explorer&lt;/title&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- Load Plotly --&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script src="https://cdn.plot.ly/plotly-latest.min.js"&gt;&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- Simple Styling --&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;style&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>body {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>font-family: Arial, sans-serif;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 30px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>max-width: 900px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>margin: auto;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.card {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>border: 1px solid #ccc;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>border-radius: 8px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 20px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>margin-bottom: 25px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>background: #fafafa;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>select, button {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 8px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>font-size: 16px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#plot {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>height: 600px;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;body&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;h2&gt;Time-Varying Phillips Curve Explorer&lt;/h2&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- REGION SELECTION CARD --&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="card"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;h3&gt;Select Region&lt;/h3&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="regionSelector"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="euro-area"&gt;Euro Area&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;br&gt;&lt;br&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button onclick="loadRegion()"&gt;Continue&lt;/button&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- CONTROL PANEL --&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="card" id="controls" style="display:none;"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;h3&gt;Controls&lt;/h3&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Bandwidth (h1):</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="bandwidth"&gt;&lt;/select&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Kernel:</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="kernel"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="gaussian"&gt;Gaussian&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="epanechnikov"&gt;Epanechnikov&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="rolling"&gt;Rolling&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>PC Type:</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="pcType"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="standard"&gt;Standard PC&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="nk"&gt;New Keynesian PC&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Estimator:</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="estimator"&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="ols"&gt;TV-OLS&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="iv"&gt;TV-IV&lt;/option&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Coefficient:</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="coef"&gt;&lt;/select&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- PLOT --&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div id="plot"&gt;&lt;/div&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const REGION_FILES = {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>"euro-area": "data/euro_area_tvpc_full.csv"</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let fullData = [];</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function loadRegion() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let region = document.getElementById("regionSelector").value;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let file = REGION_FILES[region];</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>fetch(file)</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.then(response =&gt; response.text())</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.then(text =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>fullData = parseCSV(text);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>setupControls(fullData);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>document.getElementById("controls").style.display = "block";</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>updatePlot();</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function parseCSV(text) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let lines = text.split("\n");</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let headers = lines[0].split(",");</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return lines.slice(1).map(line =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let cols = line.split(",");</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let obj = {};</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>headers.forEach((h, i) =&gt; obj[h] = cols[i]);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return obj;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}).filter(row =&gt; row.date); // drop empty</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function setupControls(data) {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Bandwidth options</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let bwSet = [...new Set(data.map(d =&gt; d.h1))];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let bwSel = document.getElementById("bandwidth");</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>bwSel.innerHTML = "";</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>bwSet.forEach(h =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let opt = document.createElement("option");</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>opt.value = h;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>opt.textContent = h;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>bwSel.appendChild(opt);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Coefficient options</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let coefSet = [...new Set(data.map(d =&gt; d.coef))];</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let coefSel = document.getElementById("coef");</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>coefSel.innerHTML = "";</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>coefSet.forEach(c =&gt; {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let opt = document.createElement("option");</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>opt.value = c;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>opt.textContent = c;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>coefSel.appendChild(opt);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>});</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Add listeners</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("bandwidth").onchange = updatePlot;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("kernel").onchange = updatePlot;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("pcType").onchange = updatePlot;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("estimator").onchange = updatePlot;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("coef").onchange = updatePlot;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function updatePlot() {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let h1<span class="Apple-converted-space">      </span>= document.getElementById("bandwidth").value;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let kernel<span class="Apple-converted-space">  </span>= document.getElementById("kernel").value;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let pcType<span class="Apple-converted-space">  </span>= document.getElementById("pcType").value;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let est <span class="Apple-converted-space">    </span>= document.getElementById("estimator").value;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let coef<span class="Apple-converted-space">    </span>= document.getElementById("coef").value;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let subset = fullData.filter(d =&gt;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.h1 == h1 &amp;&amp;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.kernel == kernel &amp;&amp;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.pc_type == pcType &amp;&amp;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.estimator == est &amp;&amp;</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.coef == coef</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>);</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let dates = subset.map(d =&gt; d.date);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let ests<span class="Apple-converted-space">  </span>= subset.map(d =&gt; parseFloat(d.estimate));</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let lower = subset.map(d =&gt; parseFloat(d.lower));</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let upper = subset.map(d =&gt; parseFloat(d.upper));</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let trace1 = {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>x: dates,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>y: ests,</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>mode: 'lines',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>name: 'Estimate'</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let trace2 = {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>x: [...dates, ...dates.slice().reverse()],</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>y: [...upper, ...lower.slice().reverse()],</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>fill: 'toself',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>fillcolor: 'rgba(0,150,200,0.2)',</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>line: {color: 'transparent'},</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>name: 'CI'</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let layout = {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>title: coef + " (" + pcType + ", " + est + ")",<span class="Apple-converted-space"> </span></span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>showlegend: true</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>Plotly.newPlot('plot', [trace2, trace1], layout);</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</span></p>
-<p class="p2"><span class="s1"></span><br></p>
-<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
-<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+  <div class="main-shell">
+    <!-- LANDING VIEW -->
+    <div id="landing" class="card active">
+      <h1>Time-Varying Phillips Curves</h1>
+      <p>Browse kernel-based estimates of the Phillips curve over time.</p>
+
+      <div class="controls-row">
+        <div class="control-group landing-region-group">
+          <label for="regionSelector" class="control-label">Region:</label>
+          <select id="regionSelector">
+            <option value="euro-area">Euro Area</option>
+          </select>
+        </div>
+        <button type="button" class="primary-btn" onclick="startApp()">Enter</button>
+      </div>
+    </div>
+
+    <!-- APP VIEW -->
+    <div id="app" class="card">
+      <div class="app-header">
+        <h2>Time-Varying Parameters of the Phillips Curve</h2>
+        <div class="app-header-right">
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span>Euro Area · Time-Varying Estimates</span>
+          </div>
+          <button type="button" class="pill-button" onclick="goBack()">← Back</button>
+        </div>
+      </div>
+
+      <div class="controls-row app-controls-row">
+        <div class="control-group">
+          <label class="control-label" for="pcType">Specification:</label>
+          <select id="pcType"></select>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="estimator">Estimator:</label>
+          <select id="estimator"></select>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="kernel">Kernel:</label>
+          <select id="kernel"></select>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="coef">Coefficient:</label>
+          <select id="coef"></select>
+        </div>
+      </div>
+
+      <div class="plot-shell">
+        <div id="plot"></div>
+
+        <div class="slider-shell">
+          <div class="slider-column">
+            <div class="slider-wrapper">
+              <input type="range" id="bandwidthSlider" min="0" max="0" step="1" value="0">
+            </div>
+          </div>
+          <div class="slider-value-pill" id="bandwidthLabel">h = 0.5</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function syncSliderLength() {
+      const col    = document.querySelector('.slider-column');
+      const slider = document.getElementById('bandwidthSlider');
+      if (!col || !slider) return;
+      const h = col.clientHeight;
+      if (h > 0) {
+        slider.style.width = Math.round(h * 0.78) + 'px';
+      }
+    }
+
+    window.addEventListener('resize', syncSliderLength);
+
+    const REGION_FILES = { "euro-area": "data/euro_area_tvpc_full.csv" };
+
+    let fullData  = [];
+    let h1Values  = [];
+    let coefBySpec = {};
+
+    function goBack() {
+      document.getElementById("app").classList.remove("active");
+      document.getElementById("landing").classList.add("active");
+    }
+
+    function cleanValue(val) {
+      return (val || "").trim().replace(/^"|"$/g, "");
+    }
+
+    function prettyPcType(raw) {
+      if (!raw) return raw;
+      const r = raw.toLowerCase();
+      if (r === "standard") return "Standard Phillips Curve";
+      if (r === "nk")       return "New Keynesian Phillips Curve";
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
+    }
+
+    function prettyEstimator(raw) {
+      if (!raw) return raw;
+      const r = raw.toLowerCase();
+      if (r === "ols") return "TV-OLS";
+      if (r === "iv")  return "TV-IV";
+      return raw.toUpperCase();
+    }
+
+    function prettyCoef(raw) {
+      const map = {
+        "(Intercept)": "Constant",
+        "dpi_lag1":    "Lagged inflation",
+        "dpi_lead1":   "Lead inflation",
+        "du":          "Unemployment"
+      };
+      if (map[raw]) return map[raw];
+      return raw
+        ? raw.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+        : raw;
+    }
+
+    function prettyKernel(raw) {
+      if (!raw) return raw;
+      const r = raw.toLowerCase();
+      return r.charAt(0).toUpperCase() + r.slice(1);
+    }
+
+    function startApp() {
+      const region = document.getElementById("regionSelector").value;
+      const file   = REGION_FILES[region];
+
+      document.getElementById("landing").classList.remove("active");
+      document.getElementById("app").classList.add("active");
+
+      // Wait two frames for layout to settle, then size the slider
+      requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
+
+      fetch(file)
+        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+        .then(text => {
+          fullData = parseCSV(text);
+          if (fullData.length === 0) { alert("No data rows found."); return; }
+          setupControls(fullData);
+          updatePlot();
+          requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
+        })
+        .catch(err => alert("Error loading data: " + err.message));
+    }
+
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) return [];
+      return lines.slice(1).map(line => {
+        if (!line.trim()) return null;
+        const c = line.split(",");
+        return {
+          date:      cleanValue(c[0]),
+          h1:        cleanValue(c[1]),
+          kernel:    cleanValue(c[2]),
+          pc_type:   cleanValue(c[3]),
+          estimator: cleanValue(c[4]),
+          coef:      cleanValue(c[5]),
+          estimate:  cleanValue(c[6]),
+          lower:     cleanValue(c[7]),
+          upper:     cleanValue(c[8])
+        };
+      }).filter(r => r && r.date !== "" && r.estimate !== "");
+    }
+
+    function setupControls(data) {
+      function fillSelect(id, values, fn) {
+        const sel = document.getElementById(id);
+        sel.innerHTML = "";
+        values.forEach(v => {
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = fn ? fn(v) : v;
+          sel.appendChild(o);
+        });
+      }
+
+      const bwSet  = [...new Set(data.map(d => d.h1))].filter(Boolean);
+      const kerSet = [...new Set(data.map(d => d.kernel))].filter(Boolean);
+      const pcSet  = [...new Set(data.map(d => d.pc_type))].filter(Boolean);
+      const estSet = [...new Set(data.map(d => d.estimator))].filter(Boolean);
+
+      coefBySpec = {};
+      data.forEach(d => {
+        if (!coefBySpec[d.pc_type]) coefBySpec[d.pc_type] = new Set();
+        coefBySpec[d.pc_type].add(d.coef);
+      });
+
+      h1Values = bwSet.map(x => parseFloat(x)).filter(x => !isNaN(x)).sort((a,b) => a-b);
+
+      const slider = document.getElementById("bandwidthSlider");
+      slider.min   = 0;
+      slider.max   = Math.max(h1Values.length - 1, 0);
+      slider.step  = 1;
+      slider.value = Math.floor(h1Values.length / 2);
+      updateBandwidthLabel();
+
+      fillSelect("kernel",    kerSet,  prettyKernel);
+      fillSelect("pcType",    pcSet,   prettyPcType);
+      fillSelect("estimator", estSet,  prettyEstimator);
+      updateCoefOptions();
+
+      slider.oninput = () => { updateBandwidthLabel(); updatePlot(); };
+      document.getElementById("kernel").onchange    = updatePlot;
+      document.getElementById("pcType").onchange    = () => { updateCoefOptions(); updatePlot(); };
+      document.getElementById("estimator").onchange = updatePlot;
+      document.getElementById("coef").onchange      = updatePlot;
+    }
+
+    function updateCoefOptions() {
+      const pcRaw = document.getElementById("pcType").value;
+      const coefs = coefBySpec[pcRaw] ? [...coefBySpec[pcRaw]] : [];
+      const sel   = document.getElementById("coef");
+      sel.innerHTML = "";
+
+      // Fixed display order: Constant, inflation terms, then Unemployment
+      const order = ["(Intercept)", "dpi_lag1", "dpi_lead1", "du"];
+      const ordered = [
+        ...order.filter(k => coefs.includes(k)),
+        ...coefs.filter(c => !order.includes(c))
+      ];
+
+      ordered.forEach(v => {
+        const o = document.createElement("option");
+        o.value = v; o.textContent = prettyCoef(v);
+        sel.appendChild(o);
+      });
+
+      // Default selection: du (Unemployment) if present
+      const hasDu = coefs.includes("du");
+      sel.value = hasDu ? "du" : (ordered[0] || "");
+    }
+
+    function getCurrentH1Numeric() {
+      const slider = document.getElementById("bandwidthSlider");
+      const idx = Math.min(Math.max(parseInt(slider.value, 10) || 0, 0), h1Values.length - 1);
+      return h1Values[idx];
+    }
+
+    function updateBandwidthLabel() {
+      document.getElementById("bandwidthLabel").textContent =
+        "h = " + getCurrentH1Numeric().toFixed(1);
+    }
+
+    function updatePlot() {
+      if (!fullData.length) return;
+
+      const hNum     = getCurrentH1Numeric();
+      const kernelRaw = document.getElementById("kernel").value;
+      const pcRaw     = document.getElementById("pcType").value;
+      const estRaw    = document.getElementById("estimator").value;
+      const coefRaw   = document.getElementById("coef").value;
+      const tol = 1e-8;
+
+      const subset = fullData.filter(d =>
+        Math.abs(parseFloat(d.h1) - hNum) < tol &&
+        d.kernel === kernelRaw && d.pc_type === pcRaw &&
+        d.estimator === estRaw && d.coef === coefRaw
+      );
+
+      if (subset.length === 0) {
+        Plotly.newPlot("plot", [], {
+          paper_bgcolor: "#050712", plot_bgcolor: "#050712",
+          xaxis: { visible: false }, yaxis: { visible: false }
+        });
+        return;
+      }
+
+      const dates = subset.map(d => d.date);
+      const ests  = subset.map(d => parseFloat(d.estimate));
+      const lower = subset.map(d => parseFloat(d.lower));
+      const upper = subset.map(d => parseFloat(d.upper));
+
+      Plotly.newPlot("plot", [
+        {
+          x: [...dates, ...dates.slice().reverse()],
+          y: [...upper, ...lower.slice().reverse()],
+          fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
+          line: { color: "transparent" }, name: "CI"
+        },
+        {
+          x: dates, y: ests, mode: "lines", name: "Estimate",
+          line: { width: 2, color: "#31e1ff" }
+        }
+      ], {
+        showlegend: false,
+        paper_bgcolor: "#050712", plot_bgcolor: "#050712",
+        margin: { l: 60, r: 40, t: 20, b: 50 },
+        xaxis: {
+          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
+          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
+        },
+        yaxis: {
+          zeroline: true, zerolinecolor: "#303548",
+          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
+        }
+      }, { responsive: true });
+    }
+  </script>
 </body>
 </html>
