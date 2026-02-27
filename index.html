@@ -840,12 +840,7 @@
       fillSelect("estimator", estSet,  prettyEstimator);
       updateCoefOptions();
 
-      let sliderDebounce = null;
-      slider.oninput = () => {
-        updateBandwidthLabel();
-        clearTimeout(sliderDebounce);
-        sliderDebounce = setTimeout(updatePlot, 120);
-      };
+      slider.oninput = () => { updateBandwidthLabel(); updatePlot(); };
       document.getElementById("kernel").onchange    = updatePlot;
       document.getElementById("pcType").onchange    = () => { updateCoefOptions(); updatePlot(); };
       document.getElementById("estimator").onchange = updatePlot;
