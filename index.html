@@ -8,12 +8,203 @@
   <meta name="CocoaVersion" content="2575.7">
   <style type="text/css">
     p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Times; -webkit-text-stroke: #000000; min-height: 14.0px}
     span.s1 {font-kerning: none}
   </style>
 </head>
 <body>
-<p class="p1"><span class="s1">const REGION_FILES = {</span></p>
-<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>"euro-area": "data/euro_area_tvpc_full.csv",</span></p>
-<p class="p1"><span class="s1">};</span></p>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;title&gt;Time-Varying Phillips Curve Explorer&lt;/title&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- Load Plotly --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script src="https://cdn.plot.ly/plotly-latest.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- Simple Styling --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>body {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>font-family: Arial, sans-serif;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 30px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>max-width: 900px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>margin: auto;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>.card {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>border: 1px solid #ccc;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>border-radius: 8px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 20px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>margin-bottom: 25px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>background: #fafafa;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>select, button {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>padding: 8px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>font-size: 16px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>#plot {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>height: 600px;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;body&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;h2&gt;Time-Varying Phillips Curve Explorer&lt;/h2&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- REGION SELECTION CARD --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="card"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;h3&gt;Select Region&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="regionSelector"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="euro-area"&gt;Euro Area&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;br&gt;&lt;br&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;button onclick="loadRegion()"&gt;Continue&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- CONTROL PANEL --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div class="card" id="controls" style="display:none;"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;h3&gt;Controls&lt;/h3&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Bandwidth (h1):</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="bandwidth"&gt;&lt;/select&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Kernel:</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="kernel"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="gaussian"&gt;Gaussian&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="epanechnikov"&gt;Epanechnikov&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="rolling"&gt;Rolling&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>PC Type:</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="pcType"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="standard"&gt;Standard PC&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="nk"&gt;New Keynesian PC&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Estimator:</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="estimator"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="ols"&gt;TV-OLS&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>&lt;option value="iv"&gt;TV-IV&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/select&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>Coefficient:</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;select id="coef"&gt;&lt;/select&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;!-- PLOT --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;div id="plot"&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>const REGION_FILES = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>"euro-area": "data/euro_area_tvpc_full.csv"</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>let fullData = [];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function loadRegion() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let region = document.getElementById("regionSelector").value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let file = REGION_FILES[region];</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>fetch(file)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.then(response =&gt; response.text())</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>.then(text =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>fullData = parseCSV(text);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>setupControls(fullData);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>document.getElementById("controls").style.display = "block";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>updatePlot();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>});</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function parseCSV(text) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let lines = text.split("\n");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let headers = lines[0].split(",");</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>return lines.slice(1).map(line =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let cols = line.split(",");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let obj = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>headers.forEach((h, i) =&gt; obj[h] = cols[i]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>return obj;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>}).filter(row =&gt; row.date); // drop empty</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function setupControls(data) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Bandwidth options</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let bwSet = [...new Set(data.map(d =&gt; d.h1))];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let bwSel = document.getElementById("bandwidth");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>bwSel.innerHTML = "";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>bwSet.forEach(h =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let opt = document.createElement("option");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>opt.value = h;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>opt.textContent = h;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>bwSel.appendChild(opt);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Coefficient options</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let coefSet = [...new Set(data.map(d =&gt; d.coef))];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let coefSel = document.getElementById("coef");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>coefSel.innerHTML = "";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>coefSet.forEach(c =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let opt = document.createElement("option");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>opt.value = c;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>opt.textContent = c;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>coefSel.appendChild(opt);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>});</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>// Add listeners</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("bandwidth").onchange = updatePlot;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("kernel").onchange = updatePlot;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("pcType").onchange = updatePlot;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("estimator").onchange = updatePlot;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>document.getElementById("coef").onchange = updatePlot;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>function updatePlot() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let h1<span class="Apple-converted-space">      </span>= document.getElementById("bandwidth").value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let kernel<span class="Apple-converted-space">  </span>= document.getElementById("kernel").value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let pcType<span class="Apple-converted-space">  </span>= document.getElementById("pcType").value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let est <span class="Apple-converted-space">    </span>= document.getElementById("estimator").value;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let coef<span class="Apple-converted-space">    </span>= document.getElementById("coef").value;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let subset = fullData.filter(d =&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.h1 == h1 &amp;&amp;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.kernel == kernel &amp;&amp;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.pc_type == pcType &amp;&amp;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.estimator == est &amp;&amp;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">         </span>d.coef == coef</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let dates = subset.map(d =&gt; d.date);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let ests<span class="Apple-converted-space">  </span>= subset.map(d =&gt; parseFloat(d.estimate));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let lower = subset.map(d =&gt; parseFloat(d.lower));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let upper = subset.map(d =&gt; parseFloat(d.upper));</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let trace1 = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>x: dates,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>y: ests,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>mode: 'lines',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>name: 'Estimate'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let trace2 = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>x: [...dates, ...dates.slice().reverse()],</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>y: [...upper, ...lower.slice().reverse()],</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>fill: 'toself',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>fillcolor: 'rgba(0,150,200,0.2)',</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>line: {color: 'transparent'},</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>name: 'CI'</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>let layout = {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>title: coef + " (" + pcType + ", " + est + ")",<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>showlegend: true</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">      </span>Plotly.newPlot('plot', [trace2, trace1], layout);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
 </body>
 </html>
