@@ -339,10 +339,9 @@
     #bandwidthSlider {
       -webkit-appearance: none;
       appearance: none;
-      width: 200px;        /* sensible CSS default; JS will override */
-      height: 3px;
-      background: #0b0e1b;
-      border-radius: 999px;
+      width: 200px;
+      height: 18px;
+      background: transparent;
       outline: none;
       transform: rotate(-90deg);
       cursor: pointer;
@@ -359,6 +358,7 @@
       background: var(--accent);
       box-shadow: 0 0 12px rgba(49, 225, 255, 0.8);
       border: 1px solid #02141b;
+      margin-top: -5.5px;
     }
 
     #bandwidthSlider::-moz-range-thumb {
@@ -371,13 +371,14 @@
 
     #bandwidthSlider::-webkit-slider-runnable-track {
       border-radius: 999px;
-      background: #0b0e1b;
+      background: #050712;
+      height: 7px;
     }
 
     #bandwidthSlider::-moz-range-track {
       border-radius: 999px;
-      background: #0b0e1b;
-      height: 3px;
+      background: #050712;
+      height: 7px;
     }
 
     .slider-value-pill {
@@ -459,38 +460,36 @@
       <p>Browse kernel-based estimates of the Phillips curve over time.</p>
 
       <div class="controls-row" style="justify-content: space-between; align-items: center;">
-        <div style="display:flex; gap:16px; align-items:center;">
-          <div class="control-group landing-region-group">
-            <label for="regionSelector" class="control-label">Region:</label>
-            <select id="regionSelector" onchange="onRegionChange(this.value)">
-              <option value="euro-area">Euro Area</option>
-            </select>
-          </div>
-          <div class="control-group landing-region-group">
-            <label for="countrySelector" class="control-label">Country:</label>
-            <select id="countrySelector" onchange="onCountryChange(this.value)">
-              <option value="">All</option>
-              <option value="AUT">Austria</option>
-              <option value="BEL">Belgium</option>
-              <option value="CYP">Cyprus</option>
-              <option value="EST">Estonia</option>
-              <option value="FIN">Finland</option>
-              <option value="FRA">France</option>
-              <option value="DEU">Germany</option>
-              <option value="GRC">Greece</option>
-              <option value="IRL">Ireland</option>
-              <option value="ITA">Italy</option>
-              <option value="LVA">Latvia</option>
-              <option value="LTU">Lithuania</option>
-              <option value="LUX">Luxembourg</option>
-              <option value="MLT">Malta</option>
-              <option value="NLD">Netherlands</option>
-              <option value="PRT">Portugal</option>
-              <option value="SVK">Slovakia</option>
-              <option value="SVN">Slovenia</option>
-              <option value="ESP">Spain</option>
-            </select>
-          </div>
+        <div class="control-group landing-region-group">
+          <label for="regionSelector" class="control-label">Region:</label>
+          <select id="regionSelector" onchange="onRegionChange(this.value)">
+            <option value="euro-area">Euro Area</option>
+          </select>
+        </div>
+        <div class="control-group landing-region-group" style="margin-left: -30px;">
+          <label for="countrySelector" class="control-label">Country:</label>
+          <select id="countrySelector" onchange="onCountryChange(this.value)">
+            <option value="">All</option>
+            <option value="AUT">Austria</option>
+            <option value="BEL">Belgium</option>
+            <option value="CYP">Cyprus</option>
+            <option value="EST">Estonia</option>
+            <option value="FIN">Finland</option>
+            <option value="FRA">France</option>
+            <option value="DEU">Germany</option>
+            <option value="GRC">Greece</option>
+            <option value="IRL">Ireland</option>
+            <option value="ITA">Italy</option>
+            <option value="LVA">Latvia</option>
+            <option value="LTU">Lithuania</option>
+            <option value="LUX">Luxembourg</option>
+            <option value="MLT">Malta</option>
+            <option value="NLD">Netherlands</option>
+            <option value="PRT">Portugal</option>
+            <option value="SVK">Slovakia</option>
+            <option value="SVN">Slovenia</option>
+            <option value="ESP">Spain</option>
+          </select>
         </div>
         <button type="button" class="primary-btn" onclick="startApp()">Enter</button>
       </div>
