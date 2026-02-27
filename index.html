@@ -448,7 +448,6 @@
   </div>
 
   <script>
-    // resize slider once layout is known
     function syncSliderLength() {
       const col    = document.querySelector('.slider-column');
       const slider = document.getElementById('bandwidthSlider');
@@ -461,13 +460,10 @@
 
     window.addEventListener('resize', syncSliderLength);
 
-    // region → CSV file mapping
-    const REGION_FILES = {
-      "euro-area": "data/euro_area_tvpc_full.csv"
-    };
+    const REGION_FILES = { "euro-area": "data/euro_area_tvpc_full.csv" };
 
-    let fullData   = [];
-    let h1Values   = [];
+    let fullData  = [];
+    let h1Values  = [];
     let coefBySpec = {};
 
     function goBack() {
@@ -476,7 +472,15 @@
     }
 
     function cleanValue(val) {
-      return (val || "").trim().replace(/^"|"$/g, "");
+      return (val || "").trim().replace(/^"|"$/g, "").replace(/\r/g, "");
+    }
+
+    // Convert DD/MM/YYYY to YYYY-MM-DD for Plotly
+    function parseDate(val) {
+      const s = cleanValue(val);
+      const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+      return s;
     }
 
     function prettyPcType(raw) {
@@ -525,83 +529,35 @@
       requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
 
       fetch(file)
-        .then(r => {
-          if (!r.ok) throw new Error("HTTP " + r.status);
-          return r.text();
-        })
+        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
         .then(text => {
           fullData = parseCSV(text);
-          if (fullData.length === 0) {
-            alert("No data rows found or headers not recognised.");
-            return;
-          }
+          if (fullData.length === 0) { alert("No data rows found."); return; }
           setupControls(fullData);
           updatePlot();
           requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
         })
-        .catch(err => {
-          console.error(err);
-          alert("Error loading data: " + err.message);
-        });
+        .catch(err => alert("Error loading data: " + err.message));
     }
 
-    // --- header-based parser (robust to column order & h vs h1, etc.) ---
     function parseCSV(text) {
       const lines = text.trim().split(/\r?\n/);
       if (lines.length < 2) return [];
-
-      const headers = lines[0].split(",").map(cleanValue);
-
-      function idx(nameCandidates) {
-        for (const cand of nameCandidates) {
-          const i = headers.findIndex(
-            h => h.toLowerCase() === cand.toLowerCase()
-          );
-          if (i !== -1) return i;
-        }
-        return -1;
-      }
-
-      const idxDate      = idx(["date"]);
-      const idxH1        = idx(["h1", "h"]);
-      const idxKernel    = idx(["kernel", "kern"]);
-      const idxPcType    = idx(["pc_type", "spec", "pc"]);
-      const idxEstimator = idx(["estimator", "est"]);
-      const idxCoef      = idx(["coef", "coefficient"]);
-      const idxEst       = idx(["estimate", "beta", "b"]);
-      const idxLower     = idx(["lower", "ci_lower", "lwr"]);
-      const idxUpper     = idx(["upper", "ci_upper", "upr"]);
-
-      if (
-        idxDate === -1 || idxH1 === -1 || idxKernel === -1 ||
-        idxPcType === -1 || idxEstimator === -1 || idxCoef === -1 ||
-        idxEst === -1 || idxLower === -1 || idxUpper === -1
-      ) {
-        console.error("parseCSV: could not find all required headers", headers);
-        return [];
-      }
-
-      return lines.slice(1)
-        .map(line => {
-          if (!line.trim()) return null;
-          const c = line.split(",");
-
-          const row = {
-            date:      cleanValue(c[idxDate]),
-            h1:        cleanValue(c[idxH1]),
-            kernel:    cleanValue(c[idxKernel]),
-            pc_type:   cleanValue(c[idxPcType]),
-            estimator: cleanValue(c[idxEstimator]),
-            coef:      cleanValue(c[idxCoef]),
-            estimate:  cleanValue(c[idxEst]),
-            lower:     cleanValue(c[idxLower]),
-            upper:     cleanValue(c[idxUpper])
-          };
-
-          if (!row.date || row.estimate === "") return null;
-          return row;
-        })
-        .filter(Boolean);
+      return lines.slice(1).map(line => {
+        if (!line.trim()) return null;
+        const c = line.split(",");
+        return {
+          date:      parseDate(c[0]),
+          h1:        cleanValue(c[1]),
+          kernel:    cleanValue(c[2]),
+          pc_type:   cleanValue(c[3]),
+          estimator: cleanValue(c[4]),
+          coef:      cleanValue(c[5]),
+          estimate:  cleanValue(c[6]),
+          lower:     cleanValue(c[7]),
+          upper:     cleanValue(c[8])
+        };
+      }).filter(r => r && r.date !== "" && r.estimate !== "");
     }
 
     function setupControls(data) {
@@ -616,10 +572,10 @@
         });
       }
 
-      const bwSet  = [...new Set(data.map(d => d.h1))].filter(Boolean);
-      const kerSet = [...new Set(data.map(d => d.kernel))].filter(Boolean);
-      const pcSet  = [...new Set(data.map(d => d.pc_type))].filter(Boolean);
-      const estSet = [...new Set(data.map(d => d.estimator))].filter(Boolean);
+      const bwSet  = [...new Set(data.map(d => d.h1))].filter(v => v !== "" && v !== undefined && v !== null);
+      const kerSet = [...new Set(data.map(d => d.kernel))].filter(v => v !== "" && v !== undefined && v !== null);
+      const pcSet  = [...new Set(data.map(d => d.pc_type))].filter(v => v !== "" && v !== undefined && v !== null);
+      const estSet = [...new Set(data.map(d => d.estimator))].filter(v => v !== "" && v !== undefined && v !== null);
 
       coefBySpec = {};
       data.forEach(d => {
@@ -627,10 +583,7 @@
         coefBySpec[d.pc_type].add(d.coef);
       });
 
-      h1Values = bwSet
-        .map(x => parseFloat(x))
-        .filter(x => !isNaN(x))
-        .sort((a, b) => a - b);
+      h1Values = bwSet.map(x => parseFloat(x)).filter(x => !isNaN(x)).sort((a,b) => a-b);
 
       const slider = document.getElementById("bandwidthSlider");
       slider.min   = 0;
@@ -657,7 +610,7 @@
       const sel   = document.getElementById("coef");
       sel.innerHTML = "";
 
-      // Prefer to show: Constant, inflation terms, Unemployment
+      // Fixed display order: Constant, inflation terms, then Unemployment
       const order = ["(Intercept)", "dpi_lag1", "dpi_lead1", "du"];
       const ordered = [
         ...order.filter(k => coefs.includes(k)),
@@ -666,76 +619,46 @@
 
       ordered.forEach(v => {
         const o = document.createElement("option");
-        o.value = v;
-        o.textContent = prettyCoef(v);
+        o.value = v; o.textContent = prettyCoef(v);
         sel.appendChild(o);
       });
 
+      // Default selection: du (Unemployment) if present
       const hasDu = coefs.includes("du");
       sel.value = hasDu ? "du" : (ordered[0] || "");
     }
 
     function getCurrentH1Numeric() {
       const slider = document.getElementById("bandwidthSlider");
-      const idx = Math.min(
-        Math.max(parseInt(slider.value, 10) || 0, 0),
-        h1Values.length - 1
-      );
+      const idx = Math.min(Math.max(parseInt(slider.value, 10) || 0, 0), h1Values.length - 1);
       return h1Values[idx];
     }
 
     function updateBandwidthLabel() {
-      const h = getCurrentH1Numeric();
-      document.getElementById("bandwidthLabel").textContent = "h = " + h.toFixed(1);
+      document.getElementById("bandwidthLabel").textContent =
+        "h = " + getCurrentH1Numeric().toFixed(1);
     }
 
     function updatePlot() {
       if (!fullData.length) return;
 
-      const hNum       = getCurrentH1Numeric();
-      const kernelSel  = document.getElementById("kernel").value;
-      const pcSel      = document.getElementById("pcType").value;
-      const estSel     = document.getElementById("estimator").value;
-      const coefSel    = document.getElementById("coef").value;
-
-      const kernelRaw  = (kernelSel || "").toLowerCase();
-      const pcRaw      = (pcSel || "").toLowerCase();
-      const estRaw     = (estSel || "").toLowerCase();
-      const coefRaw    = coefSel;
-
+      const hNum     = getCurrentH1Numeric();
+      const kernelRaw = document.getElementById("kernel").value;
+      const pcRaw     = document.getElementById("pcType").value;
+      const estRaw    = document.getElementById("estimator").value;
+      const coefRaw   = document.getElementById("coef").value;
       const tol = 1e-8;
 
-      const subset = fullData.filter(d => {
-        const hVal = parseFloat(d.h1);
-        const ker  = (d.kernel    || "").toLowerCase().trim();
-        const pc   = (d.pc_type   || "").toLowerCase().trim();
-        const est  = (d.estimator || "").toLowerCase().trim();
-        const cf   = d.coef;
-        return !isNaN(hVal) &&
-               Math.abs(hVal - hNum) < tol &&
-               ker === kernelRaw &&
-               pc  === pcRaw &&
-               est === estRaw &&
-               cf  === coefRaw;
-      });
+      const subset = fullData.filter(d =>
+        Math.abs(parseFloat(d.h1) - hNum) < tol &&
+        d.kernel === kernelRaw && d.pc_type === pcRaw &&
+        d.estimator === estRaw && d.coef === coefRaw
+      );
 
       if (subset.length === 0) {
-        console.warn("No subset match for current filters", {
-          h: hNum,
-          kernelRaw,
-          pcRaw,
-          estRaw,
-          coefRaw,
-          uniqueKernels: [...new Set(fullData.map(d => d.kernel))],
-          uniquePc:      [...new Set(fullData.map(d => d.pc_type))],
-          uniqueEst:     [...new Set(fullData.map(d => d.estimator))]
-        });
-
         Plotly.newPlot("plot", [], {
-          paper_bgcolor: "#050712",
-          plot_bgcolor: "#050712",
-          xaxis: { visible: false },
-          yaxis: { visible: false }
+          paper_bgcolor: "#050712", plot_bgcolor: "#050712",
+          xaxis: { visible: false }, yaxis: { visible: false }
         });
         return;
       }
@@ -749,38 +672,24 @@
         {
           x: [...dates, ...dates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
-          fill: "toself",
-          fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" },
-          name: "CI"
+          fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
+          line: { color: "transparent" }, name: "CI"
         },
         {
-          x: dates,
-          y: ests,
-          mode: "lines",
-          name: "Estimate",
+          x: dates, y: ests, mode: "lines", name: "Estimate",
           line: { width: 2, color: "#31e1ff" }
         }
       ], {
         showlegend: false,
-        paper_bgcolor: "#050712",
-        plot_bgcolor: "#050712",
+        paper_bgcolor: "#050712", plot_bgcolor: "#050712",
         margin: { l: 60, r: 40, t: 20, b: 50 },
         xaxis: {
-          type: "date",
-          tickformat: "%Y",
-          hoverformat: "%b %Y",
-          tickangle: 0,
-          showgrid: false,
-          linecolor: "#3b3f55",
-          nticks: 7
+          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
+          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
         },
         yaxis: {
-          zeroline: true,
-          zerolinecolor: "#303548",
-          showgrid: false,
-          linecolor: "#3b3f55",
-          tickformat: ".2f"
+          zeroline: true, zerolinecolor: "#303548",
+          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
         }
       }, { responsive: true });
     }
