@@ -564,10 +564,10 @@
         });
       }
 
-      const bwSet  = [...new Set(data.map(d => d.h1))].filter(Boolean);
-      const kerSet = [...new Set(data.map(d => d.kernel))].filter(Boolean);
-      const pcSet  = [...new Set(data.map(d => d.pc_type))].filter(Boolean);
-      const estSet = [...new Set(data.map(d => d.estimator))].filter(Boolean);
+      const bwSet  = [...new Set(data.map(d => d.h1))].filter(v => v !== "" && v !== undefined && v !== null);
+      const kerSet = [...new Set(data.map(d => d.kernel))].filter(v => v !== "" && v !== undefined && v !== null);
+      const pcSet  = [...new Set(data.map(d => d.pc_type))].filter(v => v !== "" && v !== undefined && v !== null);
+      const estSet = [...new Set(data.map(d => d.estimator))].filter(v => v !== "" && v !== undefined && v !== null);
 
       coefBySpec = {};
       data.forEach(d => {
