@@ -62,6 +62,13 @@
     #landing {
       max-width: 820px;
       margin: 0 auto;
+      background: radial-gradient(circle at right,
+                  rgba(49,225,255,0.08), transparent 60%),
+                  linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
+    }
+
+    #app {
+      background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
     }
 
     h1, h2 {
@@ -297,20 +304,20 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
     }
 
     .slider-column {
       width: 100%;
       flex: 1 1 auto;
       border-radius: 14px;
-      background: radial-gradient(circle at top,
+      background: radial-gradient(circle at bottom,
                   rgba(49,225,255,0.1), transparent 55%);
       border: 1px solid var(--border-subtle);
-      padding: 10px 4px 12px;
+      padding: 12px 4px 12px;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      gap: 8px;
     }
 
     .slider-wrapper {
@@ -356,27 +363,32 @@
       border: none;
     }
 
-    #bandwidthSlider::-webkit-slider-runnable-track { border-radius: 999px; }
+    #bandwidthSlider::-webkit-slider-runnable-track {
+      border-radius: 999px;
+      background: #0b0e1b;
+      border: 1px solid var(--border-subtle);
+    }
 
     #bandwidthSlider::-moz-range-track {
       border-radius: 999px;
       background: #0b0e1b;
       height: 6px;
+      border: 1px solid var(--border-subtle);
     }
 
     .slider-value-pill {
       font-size: 0.75rem;
       font-variant-numeric: tabular-nums;
-      padding: 4px 12px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 0 0,
-                    rgba(49, 225, 255, 0.25), transparent 60%),
-                  linear-gradient(135deg, #0d90b8, #31e1ff);
-      color: #05060a;
-      border: none;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
-      width: 110px;
+      padding: 10px 6px;
+      border-radius: 8px;
+      background: rgba(49, 225, 255, 0.08);
+      border: 1px solid rgba(49, 225, 255, 0.2);
+      color: var(--accent);
+      box-shadow: none;
+      width: 76px;
       text-align: center;
+      flex-shrink: 0;
+      margin-top: 6px;
     }
 
   </style>
@@ -437,11 +449,11 @@
 
         <div class="slider-shell">
           <div class="slider-column">
+            <div class="slider-value-pill" id="bandwidthLabel">h = 0.5</div>
             <div class="slider-wrapper">
               <input type="range" id="bandwidthSlider" min="0" max="0" step="1" value="0">
             </div>
           </div>
-          <div class="slider-value-pill" id="bandwidthLabel">h = 0.5</div>
         </div>
       </div>
     </div>
@@ -449,12 +461,12 @@
 
   <script>
     function syncSliderLength() {
-      const col    = document.querySelector('.slider-column');
-      const slider = document.getElementById('bandwidthSlider');
-      if (!col || !slider) return;
-      const h = col.clientHeight;
+      const wrapper = document.querySelector('.slider-wrapper');
+      const slider  = document.getElementById('bandwidthSlider');
+      if (!wrapper || !slider) return;
+      const h = wrapper.clientHeight;
       if (h > 0) {
-        slider.style.width = Math.round(h * 0.78) + 'px';
+        slider.style.width = Math.round(h * 0.88) + 'px';
       }
     }
 
