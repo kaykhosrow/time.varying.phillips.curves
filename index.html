@@ -3,286 +3,595 @@
 <head>
   <meta charset="UTF-8">
   <title>Time-Varying Phillips Curves</title>
+
+  <!-- D3 for proper map rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <!-- Plotly -->
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <!-- Dark, minimal styling -->
   <style>
     :root {
-      --bg:#05060a; --card-bg:#111320; --card-bg-soft:#15182a;
-      --accent:#31e1ff; --text-main:#f5f5f7; --text-subtle:#9ca3af; --border-subtle:#25273a;
-    }
-    *{box-sizing:border-box;}
-    html,body{overflow:hidden;height:100%;}
-    body{
-      margin:0;padding:0;min-height:100vh;
-      background:radial-gradient(circle at top,#15192b 0,#05060a 55%);
-      color:var(--text-main);
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
-      font-size:16px;-webkit-text-size-adjust:none;text-size-adjust:none;
-      display:flex;justify-content:center;align-items:center;min-width:1000px;
-    }
-    body::before{content:'';position:fixed;inset:0;z-index:0;}
-    .main-shell{
-      width:min(1120px,100% - 40px);margin:40px auto;flex-shrink:0;
-      transform:scale(1.05);transform-origin:center center;position:relative;z-index:1;
-    }
-    .card{
-      background:linear-gradient(135deg,var(--card-bg) 0%,var(--card-bg-soft) 100%);
-      border-radius:16px;border:1px solid var(--border-subtle);
-      box-shadow:0 18px 40px rgba(0,0,0,0.6);padding:24px 28px;
-      backdrop-filter:blur(14px);cursor:default;
-    }
-    #landing{
-      max-width:820px;margin:0 auto;
-      background:radial-gradient(circle at right,rgba(49,225,255,0.08),transparent 60%),
-                 linear-gradient(135deg,var(--card-bg) 0%,var(--card-bg-soft) 100%);
-    }
-    #app{background:linear-gradient(135deg,var(--card-bg) 0%,var(--card-bg-soft) 100%);}
-    h1,h2{margin:0;font-weight:600;letter-spacing:0.02em;}
-    h1{font-size:1.8rem;}h2{font-size:1.5rem;}
-    p{margin:8px 0;color:var(--text-subtle);line-height:1.5;}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;padding:4px 12px;border-radius:999px;
-      background:rgba(49,225,255,0.09);border:1px solid rgba(49,225,255,0.18);
-      font-size:0.75rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);
-    }
-    .pill-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);}
-    .controls-row{display:flex;flex-wrap:wrap;gap:16px 18px;margin-top:24px;align-items:flex-end;}
-    .app-controls-row{margin-top:32px;flex-wrap:nowrap;justify-content:space-between;}
-    .app-controls-row .control-group{flex:1 1 0;}
-    .app-controls-row .control-group select{width:100%;}
-    .control-group{display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
-    .control-label{font-size:0.8rem;color:var(--text-subtle);margin-left:5px;}
-    .control-group select{width:220px;}
-    select{
-      padding:8px 10px;font-size:0.9rem;border-radius:10px;
-      border:1px solid var(--border-subtle);background:#050712;color:var(--text-main);
-      outline:none;appearance:none;-webkit-appearance:none;cursor:pointer;
-      transition:border-color .2s,box-shadow .2s,background .2s,transform .05s;
-    }
-    select:hover{border-color:var(--accent);box-shadow:0 0 0 1px rgba(49,225,255,0.35);background:#070918;}
-    button{
-      padding:8px 14px;font-size:0.9rem;border-radius:10px;
-      border:1px solid var(--border-subtle);background:#050712;color:var(--text-main);
-      outline:none;cursor:pointer;
-      transition:border-color .2s,box-shadow .2s,background .2s,transform .05s;
-      white-space:nowrap;height:36px;
-    }
-    button:hover{border-color:var(--accent);box-shadow:0 0 0 1px rgba(49,225,255,0.35);background:#070918;transform:translateY(-1px);}
-    button:active{transform:translateY(1px);box-shadow:0 0 0 1px rgba(49,225,255,0.2);}
-    .primary-btn{
-      background:radial-gradient(circle at 0 0,rgba(49,225,255,0.28),transparent 55%),
-                 linear-gradient(135deg,#0d90b8,#31e1ff);
-      border:none;color:#05060a;font-weight:600;
-      box-shadow:0 4px 10px rgba(0,0,0,0.3);height:auto;
-      padding:8px 32px;border-radius:10px;will-change:transform;isolation:isolate;
-    }
-    .primary-btn:hover{
-      box-shadow:0 12px 28px rgba(0,0,0,0.75);transform:translateY(-1px);border:none;
-      background:radial-gradient(circle at 0 0,rgba(49,225,255,0.35),transparent 55%),
-                 linear-gradient(135deg,#10a4cf,#4ae5ff);
-    }
-    .primary-btn:active{transform:translateY(1px);box-shadow:0 4px 14px rgba(0,0,0,0.7);}
-    .landing-region-group{flex-direction:row;align-items:center;gap:10px;}
-    .landing-region-group .control-label{margin:0;}
-    #landing .controls-row{align-items:center;justify-content:space-between;}
-    .pill-button{
-      display:inline-flex;align-items:center;justify-content:center;gap:6px;
-      padding:4px 10px;border-radius:999px;
-      background:rgba(49,225,255,0.09);border:1px solid rgba(49,225,255,0.18);
-      font-size:0.75rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--accent);
-      height:auto;box-shadow:none;width:80px;
-    }
-    .pill-button:hover{
-      background:rgba(49,225,255,0.14);border-color:rgba(49,225,255,0.28);
-      color:var(--accent);transform:none;box-shadow:0 0 12px rgba(49,225,255,0.25);
-    }
-    #landing,#app{display:none;animation:fadeIn .4s ease-out;}
-    #landing.active,#app.active{display:block;}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
-    @keyframes revealLine{0%{width:0;}100%{width:100%;}}
-    @keyframes fadeInNote{0%{opacity:0;transform:translateY(3px);}100%{opacity:1;transform:translateY(0);}}
-    .footer-line-animate{width:0;overflow:hidden;animation:revealLine .9s cubic-bezier(.4,0,.2,1) forwards;}
-    .footer-text-animate{opacity:0;animation:fadeInNote .5s ease-out .7s forwards;}
-    .app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:12px;}
-    .app-header-right{display:flex;flex-direction:row;align-items:center;gap:10px;}
-    .plot-shell{margin-top:18px;display:flex;gap:18px;align-items:stretch;position:relative;}
-    #plot{ border-radius:14px; }
-    .slider-shell{width:110px;display:flex;flex-direction:column;align-items:center;}
-    .slider-column{
-      width:100%;flex:1 1 auto;border-radius:14px;
-      background:radial-gradient(circle at bottom,rgba(49,225,255,0.1),transparent 55%);
-      border:1px solid var(--border-subtle);padding:12px 4px 12px;
-      display:flex;flex-direction:column;align-items:center;gap:8px;
-    }
-    .slider-wrapper{
-      width:100%;flex:1 1 auto;display:flex;align-items:center;
-      justify-content:center;min-height:0;position:relative;
-    }
-    #bandwidthSlider{
-      -webkit-appearance:none;appearance:none;width:200px;height:18px;
-      background:transparent;outline:none;transform:rotate(-90deg);
-      cursor:pointer;position:absolute;flex-shrink:0;
-    }
-    #bandwidthSlider::-webkit-slider-thumb{
-      -webkit-appearance:none;appearance:none;width:18px;height:18px;
-      border-radius:50%;background:var(--accent);box-shadow:0 0 12px rgba(49,225,255,0.8);
-      border:1px solid #02141b;margin-top:-5.5px;
-    }
-    #bandwidthSlider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--accent);border:none;}
-    #bandwidthSlider::-webkit-slider-runnable-track{border-radius:999px;background:#050712;height:7px;}
-    #bandwidthSlider::-moz-range-track{border-radius:999px;background:#050712;height:7px;}
-    .slider-value-pill{
-      font-size:0.75rem;font-variant-numeric:tabular-nums;padding:10px 6px;border-radius:8px;
-      background:rgba(49,225,255,0.08);border:1px solid rgba(49,225,255,0.2);color:var(--accent);
-      box-shadow:none;width:76px;text-align:center;flex-shrink:0;margin-top:6px;
-    }
-    .map-shell{
-      margin-top:20px;width:100%;border-radius:12px;border:1px solid var(--border-subtle);
-      background:rgba(5,7,18,0.6);overflow:hidden;isolation:isolate;transform:translateZ(0);
-    }
-    #regionMap{width:100%;height:430px;display:block;}
-    #regionMap .country{fill:none;stroke:#4a4e6a;stroke-width:1.0;stroke-linejoin:round;transition:fill .3s,stroke .3s;}
-    #regionMap .country.highlighted{fill:rgba(49,225,255,0.15);stroke:var(--accent);stroke-width:0.8;filter:drop-shadow(0 0 4px rgba(49,225,255,0.5));}
-    #regionMap .country.hoverable{cursor:pointer;}
-    #regionMap .country.hoverable:hover{fill:rgba(49,225,255,0.08);stroke:rgba(49,225,255,0.5);}
-    #map-tooltip{
-      position:absolute;background:var(--card-bg);border:1px solid var(--border-subtle);
-      color:var(--text-subtle);font-size:0.7rem;padding:4px 8px;border-radius:6px;
-      pointer-events:none;opacity:0;transition:opacity .15s;white-space:nowrap;
+      --bg: #05060a;
+      --card-bg: #111320;
+      --card-bg-soft: #15182a;
+      --accent: #31e1ff;
+      --accent-soft: rgba(49, 225, 255, 0.18);
+      --text-main: #f5f5f7;
+      --text-subtle: #9ca3af;
+      --border-subtle: #25273a;
     }
 
-    /* ── Speech-bubble tooltips ─────────────────────────────────────────── */
-    .tv-bubble{
-      position:absolute;
-      display:none;
-      pointer-events:none;
-      font-size:12px;font-weight:600;
-      font-family:system-ui,-apple-system,sans-serif;
-      padding:4px 8px;
-      border-radius:5px;
-      white-space:nowrap;
-      z-index:20;
+    * {
+      box-sizing: border-box;
     }
 
-    /* Value bubble – cyan, left-pointing caret, no gap */
-    #tv-val{
-      background:#31e1ff;
-      color:#05060a;
-      /* push right of dot; caret bridges the gap */
-      margin-left:5px;
-    }
-    /* caret drawn as an inline SVG-like pseudo, flush to bubble left edge */
-    #tv-val::before{
-      content:'';
-      position:absolute;
-      /* sit exactly at left edge, vertically centred */
-      right:100%;top:50%;
-      transform:translateY(-50%);
-      /* right-pointing triangle that touches the bubble */
-      border-top:5px solid transparent;
-      border-bottom:5px solid transparent;
-      border-right:6px solid #31e1ff;
-      /* overlap 1px so no gap between triangle and box */
-      margin-right:-1px;
+    html, body {
+      overflow: hidden;
+      height: 100%;
     }
 
-    /* Value bubble flipped: caret on RIGHT side when near right edge */
-    #tv-val.flip::before{
-      right:auto;
-      left:100%;
-      border-right:none;
-      border-left:6px solid #31e1ff;
-      margin-right:0;
-      margin-left:-1px;
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #15192b 0, #05060a 55%);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+      font-size: 16px;
+      -webkit-text-size-adjust: none;
+      text-size-adjust: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-width: 1000px;
     }
 
-    /* Date bubble – grey, up-pointing caret, no gap */
-    #tv-date{
-      background:#6b7280;
-      color:#f5f5f7;
-      transform:translateX(-50%);
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
     }
-    #tv-date::before{
-      content:'';
-      position:absolute;
-      bottom:100%;left:50%;
-      transform:translateX(-50%);
-      border-left:5px solid transparent;
-      border-right:5px solid transparent;
-      border-bottom:6px solid #6b7280;
-      /* overlap 1px upward so no gap */
-      margin-bottom:-1px;
+
+    .main-shell {
+      width: min(1120px, 100% - 40px);
+      margin: 40px auto;
+      flex-shrink: 0;
+      transform: scale(1.05);
+      transform-origin: center center;
+      position: relative;
+      z-index: 1;
     }
+
+    /* Stop click-through on cards */
+    .card {
+      background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
+      border-radius: 16px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+      padding: 24px 28px;
+      backdrop-filter: blur(14px);
+      cursor: default;
+    }
+
+    #landing {
+      max-width: 820px;
+      margin: 0 auto;
+      background: radial-gradient(circle at right,
+                  rgba(49,225,255,0.08), transparent 60%),
+                  linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
+    }
+
+    #app {
+      background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
+    }
+
+    h1, h2 {
+      margin: 0;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.5rem; }
+
+    p {
+      margin: 8px 0;
+      color: var(--text-subtle);
+      line-height: 1.5;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 999px;
+      background: rgba(49, 225, 255, 0.09);
+      border: 1px solid rgba(49, 225, 255, 0.18);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+    }
+
+    .pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 18px;
+      margin-top: 24px;
+      align-items: flex-end;
+    }
+
+    .app-controls-row {
+      margin-top: 32px;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+    }
+
+    .app-controls-row .control-group {
+      flex: 1 1 0;
+    }
+
+    .app-controls-row .control-group select {
+      width: 100%;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-start;
+    }
+
+    .control-label {
+      font-size: 0.8rem;
+      color: var(--text-subtle);
+      margin-left: 5px;
+    }
+
+    .control-group select { width: 220px; }
+
+    select {
+      padding: 8px 10px;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: #050712;
+      color: var(--text-main);
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease,
+                  background 0.2s ease, transform 0.05s ease;
+    }
+
+    select:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.35);
+      background: #070918;
+    }
+
+    button {
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: #050712;
+      color: var(--text-main);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease,
+                  background 0.2s ease, transform 0.05s ease;
+      white-space: nowrap;
+      height: 36px;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.35);
+      background: #070918;
+      transform: translateY(-1px);
+    }
+
+    button:active {
+      transform: translateY(1px);
+      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.2);
+    }
+
+    .primary-btn {
+      background: radial-gradient(circle at 0 0,
+                    rgba(49, 225, 255, 0.28), transparent 55%),
+                  linear-gradient(135deg, #0d90b8, #31e1ff);
+      border: none;
+      color: #05060a;
+      font-weight: 600;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      height: auto;
+      padding: 8px 32px;
+      border-radius: 10px;
+      will-change: transform;
+      isolation: isolate;
+    }
+
+    .primary-btn:hover {
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
+      transform: translateY(-1px);
+      border: none;
+      background: radial-gradient(circle at 0 0,
+                    rgba(49, 225, 255, 0.35), transparent 55%),
+                  linear-gradient(135deg, #10a4cf, #4ae5ff);
+    }
+
+    .primary-btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
+    }
+
+    .landing-region-group {
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .landing-region-group .control-label { margin: 0; }
+
+    #landing .controls-row {
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .pill-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(49, 225, 255, 0.09);
+      border: 1px solid rgba(49, 225, 255, 0.18);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      height: auto;
+      box-shadow: none;
+      width: 80px;
+    }
+
+    .pill-button:hover {
+      background: rgba(49, 225, 255, 0.14);
+      border-color: rgba(49, 225, 255, 0.28);
+      color: var(--accent);
+      transform: none;
+      box-shadow: 0 0 12px rgba(49, 225, 255, 0.25);
+    }
+
+    #landing, #app {
+      display: none;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    #landing.active, #app.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes revealLine {
+      0%   { width: 0; }
+      100% { width: 100%; }
+    }
+
+    @keyframes fadeInNote {
+      0%   { opacity: 0; transform: translateY(3px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .footer-line-animate {
+      width: 0;
+      overflow: hidden;
+      animation: revealLine 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .footer-text-animate {
+      opacity: 0;
+      animation: fadeInNote 0.5s ease-out 0.7s forwards;
+    }
+
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      gap: 12px;
+    }
+
+    .app-header-right {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .plot-shell {
+      margin-top: 18px;
+      display: flex;
+      gap: 18px;
+      align-items: stretch;
+    }
+
+    #plot {
+      flex: 1 1 auto;
+      min-height: 520px;
+      border-radius: 14px;
+      background: #050712;
+      padding: 6px 18px 6px 6px;
+      overflow: hidden;
+    }
+
+    .slider-shell {
+      width: 110px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .slider-column {
+      width: 100%;
+      flex: 1 1 auto;
+      border-radius: 14px;
+      background: radial-gradient(circle at bottom,
+                  rgba(49,225,255,0.1), transparent 55%);
+      border: 1px solid var(--border-subtle);
+      padding: 12px 4px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .slider-wrapper {
+      width: 100%;
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      position: relative;
+    }
+
+    #bandwidthSlider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 200px;
+      height: 18px;
+      background: transparent;
+      outline: none;
+      transform: rotate(-90deg);
+      cursor: pointer;
+      position: absolute;
+      flex-shrink: 0;
+    }
+
+    #bandwidthSlider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px rgba(49, 225, 255, 0.8);
+      border: 1px solid #02141b;
+      margin-top: -5.5px;
+    }
+
+    #bandwidthSlider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+    }
+
+    #bandwidthSlider::-webkit-slider-runnable-track {
+      border-radius: 999px;
+      background: #050712;
+      height: 7px;
+    }
+
+    #bandwidthSlider::-moz-range-track {
+      border-radius: 999px;
+      background: #050712;
+      height: 7px;
+    }
+
+    .slider-value-pill {
+      font-size: 0.75rem;
+      font-variant-numeric: tabular-nums;
+      padding: 10px 6px;
+      border-radius: 8px;
+      background: rgba(49, 225, 255, 0.08);
+      border: 1px solid rgba(49, 225, 255, 0.2);
+      color: var(--accent);
+      box-shadow: none;
+      width: 76px;
+      text-align: center;
+      flex-shrink: 0;
+      margin-top: 6px;
+    }
+
+    .map-shell {
+      margin-top: 20px;
+      width: 100%;
+      border-radius: 12px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(5, 7, 18, 0.6);
+      overflow: hidden;
+      isolation: isolate;
+      transform: translateZ(0);
+    }
+
+    #regionMap {
+      width: 100%;
+      height: 430px;
+      display: block;
+    }
+
+    #regionMap .country {
+      fill: none;
+      stroke: #4a4e6a;
+      stroke-width: 1.0;
+      stroke-linejoin: round;
+      transition: fill 0.3s ease, stroke 0.3s ease;
+    }
+
+    #regionMap .country.highlighted {
+      fill: rgba(49, 225, 255, 0.15);
+      stroke: var(--accent);
+      stroke-width: 0.8;
+      filter: drop-shadow(0 0 4px rgba(49, 225, 255, 0.5));
+    }
+
+    #regionMap .country.hoverable {
+      cursor: pointer;
+    }
+
+    #regionMap .country.hoverable:hover {
+      fill: rgba(49, 225, 255, 0.08);
+      stroke: rgba(49, 225, 255, 0.5);
+    }
+
+    #map-tooltip {
+      position: absolute;
+      background: var(--card-bg);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-subtle);
+      font-size: 0.7rem;
+      padding: 4px 8px;
+      border-radius: 6px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      white-space: nowrap;
+    }
+
+    /* Credit line */
+    .credit-line {
+      text-align: left;
+      margin-top: 14px;
+      font-size: 0.72rem;
+      color: rgba(255, 255, 255, 0.45);
+      letter-spacing: 0.06em;
+      pointer-events: none;
+      user-select: none;
+    }
+
   </style>
 </head>
+
 <body onclick="handleBgClick(event)">
   <div class="main-shell">
-
-    <!-- LANDING -->
+    <!-- LANDING VIEW -->
     <div id="landing" class="card active">
       <h1>Time-Varying Phillips Curves</h1>
       <p>Browse kernel-based estimates of the Phillips curve over time.</p>
-      <div class="controls-row" style="justify-content:space-between;align-items:center;">
+
+      <div class="controls-row" style="justify-content: space-between; align-items: center;">
         <div class="control-group landing-region-group">
           <label for="regionSelector" class="control-label">Region:</label>
           <select id="regionSelector" onchange="onRegionChange(this.value)">
             <option value="euro-area">Euro Area</option>
           </select>
         </div>
-        <div class="control-group landing-region-group" style="margin-left:-60px;">
+        <div class="control-group landing-region-group" style="margin-left: -60px;">
           <label for="countrySelector" class="control-label">Country:</label>
           <select id="countrySelector" onchange="onCountryChange(this.value)">
             <option value="">All</option>
-            <option value="AUT">Austria</option><option value="BEL">Belgium</option>
-            <option value="CYP">Cyprus</option><option value="EST">Estonia</option>
-            <option value="FIN">Finland</option><option value="FRA">France</option>
-            <option value="DEU">Germany</option><option value="GRC">Greece</option>
-            <option value="IRL">Ireland</option><option value="ITA">Italy</option>
-            <option value="LVA">Latvia</option><option value="LTU">Lithuania</option>
-            <option value="LUX">Luxembourg</option><option value="MLT">Malta</option>
-            <option value="NLD">Netherlands</option><option value="PRT">Portugal</option>
-            <option value="SVK">Slovakia</option><option value="SVN">Slovenia</option>
+            <option value="AUT">Austria</option>
+            <option value="BEL">Belgium</option>
+            <option value="CYP">Cyprus</option>
+            <option value="EST">Estonia</option>
+            <option value="FIN">Finland</option>
+            <option value="FRA">France</option>
+            <option value="DEU">Germany</option>
+            <option value="GRC">Greece</option>
+            <option value="IRL">Ireland</option>
+            <option value="ITA">Italy</option>
+            <option value="LVA">Latvia</option>
+            <option value="LTU">Lithuania</option>
+            <option value="LUX">Luxembourg</option>
+            <option value="MLT">Malta</option>
+            <option value="NLD">Netherlands</option>
+            <option value="PRT">Portugal</option>
+            <option value="SVK">Slovakia</option>
+            <option value="SVN">Slovenia</option>
             <option value="ESP">Spain</option>
           </select>
         </div>
-        <button type="button" class="primary-btn" style="padding:8px 18px;" onclick="startApp()">Enter</button>
+        <button type="button" class="primary-btn" style="padding: 8px 18px;" onclick="startApp()">Enter</button>
       </div>
+
+      <!-- Map -->
       <div class="map-shell" style="position:relative;">
         <div id="map-tooltip"></div>
         <svg id="regionMap"></svg>
       </div>
     </div>
-    <div id="landing-credit" style="max-width:820px;margin:6px auto 0;">
-      <div style="display:inline-grid;grid-template-columns:1fr;">
-        <div id="landing-line" class="footer-line-animate" style="height:1px;background:rgba(255,255,255,0.375);margin:0 0 13px 0;"></div>
-        <p id="landing-text" class="footer-text-animate" style="margin:0;font-size:0.71rem;color:rgba(255,255,255,0.50);letter-spacing:0.06em;white-space:nowrap;">Developed by Omar Kaykhusraw.</p>
+    <div id="landing-credit" style="max-width:820px; margin: 6px auto 0;">
+      <div style="display:inline-grid; grid-template-columns: 1fr;">
+        <div id="landing-line" class="footer-line-animate" style="height:1px; background:rgba(255,255,255,0.375); margin: 0 0 13px 0;"></div>
+        <p id="landing-text" class="footer-text-animate" style="margin:0; font-size:0.71rem; color:rgba(255,255,255,0.50); letter-spacing:0.06em; white-space:nowrap;">Developed by Omar Kaykhusraw.</p>
       </div>
     </div>
 
-    <!-- APP -->
+    <!-- APP VIEW -->
     <div id="app" class="card">
       <div class="app-header">
         <h2>Time-Varying Parameters of the Phillips Curve</h2>
         <div class="app-header-right">
-          <div class="pill"><span class="pill-dot"></span><span>Euro Area &middot; Time-Varying Estimates</span></div>
-          <button type="button" class="pill-button" onclick="goBack()">&#8592; Back</button>
-        </div>
-      </div>
-      <div class="controls-row app-controls-row">
-        <div class="control-group"><label class="control-label" for="pcType">Specification:</label><select id="pcType"></select></div>
-        <div class="control-group"><label class="control-label" for="estimator">Estimator:</label><select id="estimator"></select></div>
-        <div class="control-group"><label class="control-label" for="kernel">Kernel:</label><select id="kernel"></select></div>
-        <div class="control-group"><label class="control-label" for="coef">Coefficient:</label><select id="coef"></select></div>
-      </div>
-      <div class="plot-shell">
-        <div id="plot-wrapper" style="flex:1 1 auto;position:relative;">
-          <div id="plot" style="width:100%;min-height:520px;border-radius:14px;background:#050712;padding:6px 18px 6px 6px;overflow:hidden;position:relative;">
-            <!-- Speech-bubble overlays — absolute within #plot, coords match Plotly margin coords -->
-            <div id="tv-val"  class="tv-bubble"></div>
-            <div id="tv-date" class="tv-bubble"></div>
+          <div class="pill">
+            <span class="pill-dot"></span>
+            <span>Euro Area · Time-Varying Estimates</span>
           </div>
+          <button type="button" class="pill-button" onclick="goBack()">← Back</button>
         </div>
+      </div>
+
+      <div class="controls-row app-controls-row">
+        <div class="control-group">
+          <label class="control-label" for="pcType">Specification:</label>
+          <select id="pcType"></select>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="estimator">Estimator:</label>
+          <select id="estimator"></select>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="kernel">Kernel:</label>
+          <select id="kernel"></select>
+        </div>
+        <div class="control-group">
+          <label class="control-label" for="coef">Coefficient:</label>
+          <select id="coef"></select>
+        </div>
+      </div>
+
+      <div class="plot-shell">
+        <div id="plot"></div>
+
         <div class="slider-shell">
           <div class="slider-column">
             <div class="slider-value-pill" id="bandwidthLabel">h = 0.5</div>
@@ -293,253 +602,372 @@
         </div>
       </div>
     </div>
-
-    <div id="app-footer" style="display:none;margin-top:20px;">
-      <div style="max-width:1120px;">
-        <hr id="app-footer-hr" class="footer-line-animate" style="border:none;border-top:1px solid rgba(255,255,255,0.375);margin:0 0 18px 0;">
-        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0;font-size:0.71rem;color:rgba(255,255,255,0.50);line-height:1.8;text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46&#8211;65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129&#8211;149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394&#8211;415</a>. For further details or data provisions, please contact the developer at <a href="/cdn-cgi/l/email-protection#8fe0e2eefda1e4eef6e4e7fafcfdeef8cfe8e2eee6e3a1ece0e2" style="color:rgba(255,255,255,0.50);text-decoration:none;"><span class="__cf_email__" data-cfemail="6a05070b1844010b1301021f19180b1d2a0d070b030644090507">[email&#160;protected]</span></a>.</p>
+    <div id="app-footer" style="display:none; margin-top: 20px;">
+      <div style="max-width: 1120px;">
+        <hr id="app-footer-hr" class="footer-line-animate" style="border:none; border-top: 1px solid rgba(255,255,255,0.375); margin: 0 0 18px 0;">
+        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
       </div>
     </div>
-  </div><!-- /.main-shell -->
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-    function handleBgClick(e){}
+  </div>
 
+  <script>
+    // Handle background click to go home — disabled
+    function handleBgClick(e) {}
+
+    // Euro Area country ISO codes
     const REGION_COUNTRIES = {
-      "euro-area":["AUT","BEL","CYP","EST","FIN","FRA","DEU","GRC","IRL",
-                   "ITA","LVA","LTU","LUX","MLT","NLD","PRT","SVK","SVN","ESP"]
+      "euro-area": ["AUT","BEL","CYP","EST","FIN","FRA","DEU","GRC","IRL",
+                    "ITA","LVA","LTU","LUX","MLT","NLD","PRT","SVK","SVN","ESP"]
     };
+
     const ISO_NAMES = {
       "AUT":"Austria","BEL":"Belgium","CYP":"Cyprus","EST":"Estonia","FIN":"Finland",
       "FRA":"France","DEU":"Germany","GRC":"Greece","IRL":"Ireland","ITA":"Italy",
       "LVA":"Latvia","LTU":"Lithuania","LUX":"Luxembourg","MLT":"Malta","NLD":"Netherlands",
       "PRT":"Portugal","SVK":"Slovakia","SVN":"Slovenia","ESP":"Spain"
     };
+
     let mapReady = false;
 
-    function highlightCodes(codes){
-      if(!mapReady)return;
-      d3.selectAll('#regionMap .country').classed('highlighted',false);
-      codes.forEach(c=>d3.select(`#regionMap .country[data-iso="${c}"]`).classed('highlighted',true));
-    }
-    function onRegionChange(v){ document.getElementById('countrySelector').value=''; highlightCodes(REGION_COUNTRIES[v]||[]); }
-    function onCountryChange(v){
-      if(!v) highlightCodes(REGION_COUNTRIES[document.getElementById('regionSelector').value]||[]);
-      else highlightCodes([v]);
+    function highlightCodes(codes) {
+      if (!mapReady) return;
+      d3.selectAll('#regionMap .country').classed('highlighted', false);
+      codes.forEach(c => {
+        d3.select(`#regionMap .country[data-iso="${c}"]`).classed('highlighted', true);
+      });
     }
 
-    window.addEventListener('DOMContentLoaded',()=>{
-      const svg=d3.select('#regionMap');
-      const width=document.getElementById('regionMap').clientWidth||760;
-      const height=430;
-      const tooltip=document.getElementById('map-tooltip');
-      const proj=d3.geoMercator().scale(1).translate([0,0]);
-      const path=d3.geoPath().projection(proj);
+    function onRegionChange(value) {
+      document.getElementById('countrySelector').value = '';
+      highlightCodes(REGION_COUNTRIES[value] || []);
+    }
+
+    function onCountryChange(value) {
+      if (!value) {
+        highlightCodes(REGION_COUNTRIES[document.getElementById('regionSelector').value] || []);
+      } else {
+        highlightCodes([value]);
+      }
+    }
+
+    // Build D3 map on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const svg = d3.select('#regionMap');
+      const width  = document.getElementById('regionMap').clientWidth || 760;
+      const height = 430;
+      const tooltip = document.getElementById('map-tooltip');
+
+      const projection = d3.geoMercator()
+        .scale(1)
+        .translate([0, 0]);
+      const path = d3.geoPath().projection(projection);
+
       fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
-        .then(r=>r.json()).then(world=>{
-          const countries=topojson.feature(world,world.objects.countries);
-          const n2a={"040":"AUT","056":"BEL","196":"CYP","233":"EST","246":"FIN",
-                     "250":"FRA","276":"DEU","300":"GRC","372":"IRL","380":"ITA",
-                     "428":"LVA","440":"LTU","442":"LUX","470":"MLT","528":"NLD",
-                     "620":"PRT","703":"SVK","705":"SVN","724":"ESP"};
-          const filtered={type:'FeatureCollection',features:countries.features
-            .filter(d=>String(d.id)!=='10')
-            .map(d=>{
-              if(d.geometry&&d.geometry.type==='MultiPolygon'){
-                const polys=d.geometry.coordinates.filter(poly=>{
-                  const ring=poly[0];
-                  const avgLon=ring.reduce((s,p)=>s+p[0],0)/ring.length;
-                  const avgLat=ring.reduce((s,p)=>s+p[1],0)/ring.length;
-                  const iso=n2a[String(d.id).padStart(3,'0')];
-                  if(iso==='FRA')return avgLon>-10&&avgLat>40;
-                  return avgLon>-170&&avgLat>-58&&avgLat<84;
-                });
-                if(!polys.length)return null;
-                return{...d,geometry:{...d.geometry,coordinates:polys}};
-              }
-              return d;
-            }).filter(Boolean)};
-          proj.fitSize([width,height],filtered);
-          proj.scale(proj.scale()*1.3);
-          const[tx,ty]=proj.translate();proj.translate([tx,ty]);
-          svg.attr('viewBox',`0 0 ${width} ${height}`).attr('width',width).attr('height',height);
-          const g=svg.append('g');
-          g.selectAll('.country').data(filtered.features).enter().append('path')
-            .attr('class',d=>{const iso=n2a[String(d.id).padStart(3,'0')]||'';return'country'+(iso?' hoverable':'');})
-            .attr('d',d=>{try{return path(d);}catch(e){return'';}})
-            .attr('data-iso',d=>n2a[String(d.id).padStart(3,'0')]||'')
-            .on('mouseenter',function(event,d){
-              const iso=n2a[String(d.id).padStart(3,'0')];
-              if(!iso)return;
-              tooltip.textContent=ISO_NAMES[iso];tooltip.style.opacity='1';
+        .then(r => r.json())
+        .then(world => {
+          const countries = topojson.feature(world, world.objects.countries);
+
+          const numericToAlpha3 = {
+            "040":"AUT","056":"BEL","196":"CYP","233":"EST","246":"FIN",
+            "250":"FRA","276":"DEU","300":"GRC","372":"IRL","380":"ITA",
+            "428":"LVA","440":"LTU","442":"LUX","470":"MLT","528":"NLD",
+            "620":"PRT","703":"SVK","705":"SVN","724":"ESP"
+          };
+
+          // Filter out Antarctica and sub-features outside inhabited world
+          const filtered = {
+            type: 'FeatureCollection',
+            features: countries.features
+              .filter(d => String(d.id) !== '10') // Antarctica
+              .map(d => {
+                // For multipolygon countries, strip polygons outside lon -170..180, lat -60..85
+                if (d.geometry && d.geometry.type === 'MultiPolygon') {
+                  const polys = d.geometry.coordinates.filter(poly => {
+                    const ring = poly[0];
+                    const avgLon = ring.reduce((s,p) => s+p[0], 0) / ring.length;
+                    const avgLat = ring.reduce((s,p) => s+p[1], 0) / ring.length;
+                    // Exclude remote Pacific/Atlantic islands and French Guiana
+                    const iso = numericToAlpha3[String(d.id).padStart(3,'0')];
+                    if (iso === 'FRA') return avgLon > -10 && avgLat > 40;
+                    return avgLon > -170 && avgLat > -58 && avgLat < 84;
+                  });
+                  if (!polys.length) return null;
+                  return { ...d, geometry: { ...d.geometry, coordinates: polys } };
+                }
+                return d;
+              })
+              .filter(Boolean)
+          };
+
+          projection.fitSize([width, height], filtered);
+          projection.scale(projection.scale() * 1.3);
+          const [tx, ty] = projection.translate();
+          projection.translate([tx, ty]);
+
+          svg.attr('viewBox', `0 0 ${width} ${height}`)
+             .attr('width', width)
+             .attr('height', height);
+
+          const g = svg.append('g');
+
+          g.selectAll('.country')
+            .data(filtered.features)
+            .enter().append('path')
+            .attr('class', d => {
+              const id = String(d.id).padStart(3, '0');
+              const iso = numericToAlpha3[id] || '';
+              return 'country' + (iso ? ' hoverable' : '');
             })
-            .on('mousemove',function(event){
-              const box=document.querySelector('.map-shell').getBoundingClientRect();
-              tooltip.style.left=(event.clientX-box.left+10)+'px';
-              tooltip.style.top=(event.clientY-box.top-28)+'px';
+            .attr('d', d => { try { return path(d); } catch(e) { return ''; } })
+            .attr('data-iso', d => {
+              const id = String(d.id).padStart(3, '0');
+              return numericToAlpha3[id] || '';
             })
-            .on('mouseleave',()=>{tooltip.style.opacity='0';})
-            .on('click',function(event,d){
-              const iso=n2a[String(d.id).padStart(3,'0')];
-              if(!iso)return;
-              document.getElementById('countrySelector').value=iso;
+            .on('mouseenter', function(event, d) {
+              const id = String(d.id).padStart(3, '0');
+              const iso = numericToAlpha3[id];
+              if (!iso) return;
+              tooltip.textContent = ISO_NAMES[iso];
+              tooltip.style.opacity = '1';
+            })
+            .on('mousemove', function(event) {
+              const box = document.querySelector('.map-shell').getBoundingClientRect();
+              tooltip.style.left = (event.clientX - box.left + 10) + 'px';
+              tooltip.style.top  = (event.clientY - box.top  - 28) + 'px';
+            })
+            .on('mouseleave', function() {
+              tooltip.style.opacity = '0';
+            })
+            .on('click', function(event, d) {
+              const id = String(d.id).padStart(3, '0');
+              const iso = numericToAlpha3[id];
+              if (!iso) return;
+              document.getElementById('countrySelector').value = iso;
               highlightCodes([iso]);
             });
-          mapReady=true;
+
+          mapReady = true;
           highlightCodes(REGION_COUNTRIES['euro-area']);
-        }).catch(()=>{});
+        })
+        .catch(() => {});
     });
 
-    function syncSliderLength(){
-      const w=document.querySelector('.slider-wrapper');
-      const s=document.getElementById('bandwidthSlider');
-      if(!w||!s)return;
-      const h=w.clientHeight;
-      if(h>0)s.style.width=Math.round(h*.88)+'px';
+    function syncSliderLength() {
+      const wrapper = document.querySelector('.slider-wrapper');
+      const slider  = document.getElementById('bandwidthSlider');
+      if (!wrapper || !slider) return;
+      const h = wrapper.clientHeight;
+      if (h > 0) {
+        slider.style.width = Math.round(h * 0.88) + 'px';
+      }
     }
-    window.addEventListener('resize',syncSliderLength);
 
-    const REGION_FILES={"euro-area":"data/euro_area_tvpc_full.csv"};
-    let fullData=[],h1Values=[],coefBySpec={};
+    window.addEventListener('resize', syncSliderLength);
 
-    function goBack(){
+    const REGION_FILES = { "euro-area": "data/euro_area_tvpc_full.csv" };
+
+    let fullData  = [];
+    let h1Values  = [];
+    let coefBySpec = {};
+
+    function goBack() {
       document.getElementById("app").classList.remove("active");
-      document.getElementById("app-footer").style.display="none";
-      hideTooltips();
-      const lc=document.getElementById("landing-credit");lc.style.display="block";
-      const ll=document.getElementById("landing-line"),lp=document.getElementById("landing-text");
-      ll.classList.remove("footer-line-animate");void ll.offsetWidth;ll.classList.add("footer-line-animate");
-      lp.classList.remove("footer-text-animate");void lp.offsetWidth;lp.classList.add("footer-text-animate");
+      document.getElementById("app-footer").style.display = "none";
+      const lc = document.getElementById("landing-credit");
+      lc.style.display = "block";
+      // Re-animate the separator line only (not the wrapper)
+      const lcLine = document.getElementById("landing-line");
+      const lcP    = document.getElementById("landing-text");
+      lcLine.classList.remove("footer-line-animate");
+      void lcLine.offsetWidth;
+      lcLine.classList.add("footer-line-animate");
+      lcP.classList.remove("footer-text-animate");
+      void lcP.offsetWidth;
+      lcP.classList.add("footer-text-animate");
       document.getElementById("landing").classList.add("active");
     }
 
-    function cleanValue(v){return(v||"").trim().replace(/^"|"$/g,"").replace(/\r/g,"");}
-    function parseDate(v){
-      const s=cleanValue(v);
-      const m=s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if(m)return`${m[3]}-${m[2]}-${m[1]}`;
+    function cleanValue(val) {
+      return (val || "").trim().replace(/^"|"$/g, "").replace(/\r/g, "");
+    }
+
+    // Convert DD/MM/YYYY to YYYY-MM-DD for Plotly
+    function parseDate(val) {
+      const s = cleanValue(val);
+      const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (m) return `${m[3]}-${m[2]}-${m[1]}`;
       return s;
     }
-    function prettyPcType(r){
-      if(!r)return r;const l=r.toLowerCase();
-      if(l==="standard")return"Standard Phillips Curve";
-      if(l==="nk")return"New Keynesian Phillips Curve";
-      return r.charAt(0).toUpperCase()+r.slice(1);
-    }
-    function prettyEstimator(r){
-      if(!r)return r;const l=r.toLowerCase();
-      if(l==="ols")return"TV-OLS";if(l==="iv")return"TV-IV";return r.toUpperCase();
-    }
-    function prettyCoef(r){
-      const m={"(Intercept)":"Constant","dpi_lag1":"Lagged inflation","dpi_lead1":"Lead inflation","du":"Unemployment"};
-      if(m[r])return m[r];
-      return r?r.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase()):r;
-    }
-    function prettyKernel(r){if(!r)return r;const l=r.toLowerCase();return l.charAt(0).toUpperCase()+l.slice(1);}
 
-    function formatDateLabel(iso){
-      const d=new Date(iso+'T00:00:00');
-      return d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+    function prettyPcType(raw) {
+      if (!raw) return raw;
+      const r = raw.toLowerCase();
+      if (r === "standard") return "Standard Phillips Curve";
+      if (r === "nk")       return "New Keynesian Phillips Curve";
+      return raw.charAt(0).toUpperCase() + raw.slice(1);
     }
 
-    function startApp(){
-      const region=document.getElementById("regionSelector").value;
-      const file=REGION_FILES[region];
+    function prettyEstimator(raw) {
+      if (!raw) return raw;
+      const r = raw.toLowerCase();
+      if (r === "ols") return "TV-OLS";
+      if (r === "iv")  return "TV-IV";
+      return raw.toUpperCase();
+    }
+
+    function prettyCoef(raw) {
+      const map = {
+        "(Intercept)": "Constant",
+        "dpi_lag1":    "Lagged inflation",
+        "dpi_lead1":   "Lead inflation",
+        "du":          "Unemployment"
+      };
+      if (map[raw]) return map[raw];
+      return raw
+        ? raw.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())
+        : raw;
+    }
+
+    function prettyKernel(raw) {
+      if (!raw) return raw;
+      const r = raw.toLowerCase();
+      return r.charAt(0).toUpperCase() + r.slice(1);
+    }
+
+    function startApp() {
+      const region = document.getElementById("regionSelector").value;
+      const file   = REGION_FILES[region];
+
       document.getElementById("landing").classList.remove("active");
       document.getElementById("app").classList.add("active");
-      document.getElementById("landing-credit").style.display="none";
-      const af=document.getElementById("app-footer");af.style.display="block";
-      const afHr=document.getElementById("app-footer-hr"),afP=document.getElementById("app-footer-text");
-      [afHr,afP].forEach(el=>{el.classList.remove("footer-line-animate","footer-text-animate");void el.offsetWidth;});
-      afHr.classList.add("footer-line-animate");afP.classList.add("footer-text-animate");
-      requestAnimationFrame(()=>requestAnimationFrame(syncSliderLength));
+      document.getElementById("landing-credit").style.display = "none";
+      const af = document.getElementById("app-footer");
+      af.style.display = "block";
+      const afHr = document.getElementById("app-footer-hr");
+      const afP  = document.getElementById("app-footer-text");
+      [afHr, afP].forEach(el => { el.classList.remove("footer-line-animate", "footer-text-animate"); void el.offsetWidth; });
+      afHr.classList.add("footer-line-animate");
+      afP.classList.add("footer-text-animate");
+
+      // Wait two frames for layout to settle, then size the slider
+      requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
+
       fetch(file)
-        .then(r=>{if(!r.ok)throw new Error("HTTP "+r.status);return r.text();})
-        .then(text=>{
-          fullData=parseCSV(text);
-          if(!fullData.length){alert("No data rows found.");return;}
+        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
+        .then(text => {
+          fullData = parseCSV(text);
+          if (fullData.length === 0) { alert("No data rows found."); return; }
           setupControls(fullData);
           updatePlot();
-          requestAnimationFrame(()=>requestAnimationFrame(syncSliderLength));
+          requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
         })
-        .catch(err=>alert("Error loading data: "+err.message));
+        .catch(err => alert("Error loading data: " + err.message));
     }
 
-    function parseCSV(text){
-      const lines=text.trim().split(/\r?\n/);
-      if(lines.length<2)return[];
-      return lines.slice(1).map(line=>{
-        if(!line.trim())return null;
-        const c=line.split(",");
-        return{
-          date:parseDate(c[0]),h1:cleanValue(c[1]),kernel:cleanValue(c[2]),
-          pc_type:cleanValue(c[3]),estimator:cleanValue(c[4]),coef:cleanValue(c[5]),
-          estimate:cleanValue(c[6]),lower:cleanValue(c[7]),upper:cleanValue(c[8])
+    function parseCSV(text) {
+      const lines = text.trim().split(/\r?\n/);
+      if (lines.length < 2) return [];
+      return lines.slice(1).map(line => {
+        if (!line.trim()) return null;
+        const c = line.split(",");
+        return {
+          date:      parseDate(c[0]),
+          h1:        cleanValue(c[1]),
+          kernel:    cleanValue(c[2]),
+          pc_type:   cleanValue(c[3]),
+          estimator: cleanValue(c[4]),
+          coef:      cleanValue(c[5]),
+          estimate:  cleanValue(c[6]),
+          lower:     cleanValue(c[7]),
+          upper:     cleanValue(c[8])
         };
-      }).filter(r=>r&&r.date!==""&&r.estimate!=="");
+      }).filter(r => r && r.date !== "" && r.estimate !== "");
     }
 
-    function setupControls(data){
-      function fillSelect(id,values,fn){
-        const sel=document.getElementById(id);sel.innerHTML="";
-        values.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=fn?fn(v):v;sel.appendChild(o);});
+    function setupControls(data) {
+      function fillSelect(id, values, fn) {
+        const sel = document.getElementById(id);
+        sel.innerHTML = "";
+        values.forEach(v => {
+          const o = document.createElement("option");
+          o.value = v;
+          o.textContent = fn ? fn(v) : v;
+          sel.appendChild(o);
+        });
       }
-      const bwSet =[...new Set(data.map(d=>d.h1))].filter(v=>v!==""&&v!=null);
-      const kerSet=[...new Set(data.map(d=>d.kernel))].filter(v=>v!==""&&v!=null);
-      const pcSet =[...new Set(data.map(d=>d.pc_type))].filter(v=>v!==""&&v!=null);
-      const estSet=[...new Set(data.map(d=>d.estimator))].filter(v=>v!==""&&v!=null);
-      coefBySpec={};
-      data.forEach(d=>{if(!coefBySpec[d.pc_type])coefBySpec[d.pc_type]=new Set();coefBySpec[d.pc_type].add(d.coef);});
-      h1Values=bwSet.map(x=>parseFloat(x)).filter(x=>!isNaN(x)).sort((a,b)=>a-b);
-      const slider=document.getElementById("bandwidthSlider");
-      slider.min=0;slider.max=Math.max(h1Values.length-1,0);slider.step=1;
-      slider.value=Math.floor(h1Values.length/2);
+
+      const bwSet  = [...new Set(data.map(d => d.h1))].filter(v => v !== "" && v !== undefined && v !== null);
+      const kerSet = [...new Set(data.map(d => d.kernel))].filter(v => v !== "" && v !== undefined && v !== null);
+      const pcSet  = [...new Set(data.map(d => d.pc_type))].filter(v => v !== "" && v !== undefined && v !== null);
+      const estSet = [...new Set(data.map(d => d.estimator))].filter(v => v !== "" && v !== undefined && v !== null);
+
+      coefBySpec = {};
+      data.forEach(d => {
+        if (!coefBySpec[d.pc_type]) coefBySpec[d.pc_type] = new Set();
+        coefBySpec[d.pc_type].add(d.coef);
+      });
+
+      h1Values = bwSet.map(x => parseFloat(x)).filter(x => !isNaN(x)).sort((a,b) => a-b);
+
+      const slider = document.getElementById("bandwidthSlider");
+      slider.min   = 0;
+      slider.max   = Math.max(h1Values.length - 1, 0);
+      slider.step  = 1;
+      slider.value = Math.floor(h1Values.length / 2);
       updateBandwidthLabel();
-      fillSelect("kernel",kerSet,prettyKernel);
-      fillSelect("pcType",pcSet,prettyPcType);
-      fillSelect("estimator",estSet,prettyEstimator);
+
+      fillSelect("kernel",    kerSet,  prettyKernel);
+      fillSelect("pcType",    pcSet,   prettyPcType);
+      fillSelect("estimator", estSet,  prettyEstimator);
       updateCoefOptions();
-      slider.oninput=()=>{updateBandwidthLabel();updatePlot();};
-      document.getElementById("kernel").onchange=updatePlot;
-      document.getElementById("pcType").onchange=()=>{updateCoefOptions();updatePlot();};
-      document.getElementById("estimator").onchange=updatePlot;
-      document.getElementById("coef").onchange=updatePlot;
+
+      slider.oninput = () => { updateBandwidthLabel(); updatePlot(); };
+      document.getElementById("kernel").onchange    = updatePlot;
+      document.getElementById("pcType").onchange    = () => { updateCoefOptions(); updatePlot(); };
+      document.getElementById("estimator").onchange = updatePlot;
+      document.getElementById("coef").onchange      = updatePlot;
     }
 
-    function updateCoefOptions(){
-      const pcRaw=document.getElementById("pcType").value;
-      const coefs=coefBySpec[pcRaw]?[...coefBySpec[pcRaw]]:[];
-      const sel=document.getElementById("coef");sel.innerHTML="";
-      const order=["(Intercept)","dpi_lag1","dpi_lead1","du"];
-      const ordered=[...order.filter(k=>coefs.includes(k)),...coefs.filter(c=>!order.includes(c))];
-      ordered.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=prettyCoef(v);sel.appendChild(o);});
-      sel.value=coefs.includes("du")?"du":(ordered[0]||"");
+    function updateCoefOptions() {
+      const pcRaw = document.getElementById("pcType").value;
+      const coefs = coefBySpec[pcRaw] ? [...coefBySpec[pcRaw]] : [];
+      const sel   = document.getElementById("coef");
+      sel.innerHTML = "";
+
+      // Fixed display order: Constant, inflation terms, then Unemployment
+      const order = ["(Intercept)", "dpi_lag1", "dpi_lead1", "du"];
+      const ordered = [
+        ...order.filter(k => coefs.includes(k)),
+        ...coefs.filter(c => !order.includes(c))
+      ];
+
+      ordered.forEach(v => {
+        const o = document.createElement("option");
+        o.value = v; o.textContent = prettyCoef(v);
+        sel.appendChild(o);
+      });
+
+      // Default selection: du (Unemployment) if present
+      const hasDu = coefs.includes("du");
+      sel.value = hasDu ? "du" : (ordered[0] || "");
     }
 
-    function getCurrentH1Numeric(){
-      const slider=document.getElementById("bandwidthSlider");
-      const idx=Math.min(Math.max(parseInt(slider.value,10)||0,0),h1Values.length-1);
+    function getCurrentH1Numeric() {
+      const slider = document.getElementById("bandwidthSlider");
+      const idx = Math.min(Math.max(parseInt(slider.value, 10) || 0, 0), h1Values.length - 1);
       return h1Values[idx];
     }
-    function updateBandwidthLabel(){
-      document.getElementById("bandwidthLabel").textContent="h = "+getCurrentH1Numeric().toFixed(1);
+
+    function updateBandwidthLabel() {
+      document.getElementById("bandwidthLabel").textContent =
+        "h = " + getCurrentH1Numeric().toFixed(1);
     }
 
-    function hideTooltips(){
-      document.getElementById('tv-val').style.display='none';
-      document.getElementById('tv-date').style.display='none';
-    }
+    function updatePlot() {
+      if (!fullData.length) return;
 
-    function formatDateLabel(iso){
-      const d=new Date(iso+'T00:00:00');
-      return d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
-    }
-
-    function updatePlot(){
-      if(!fullData.length) return;
-      hideTooltips();
-
-      const hNum      = getCurrentH1Numeric();
+      const hNum     = getCurrentH1Numeric();
       const kernelRaw = document.getElementById("kernel").value;
       const pcRaw     = document.getElementById("pcType").value;
       const estRaw    = document.getElementById("estimator").value;
@@ -547,124 +975,50 @@
       const tol = 1e-8;
 
       const subset = fullData.filter(d =>
-        Math.abs(parseFloat(d.h1)-hNum)<tol &&
-        d.kernel===kernelRaw && d.pc_type===pcRaw &&
-        d.estimator===estRaw && d.coef===coefRaw
+        Math.abs(parseFloat(d.h1) - hNum) < tol &&
+        d.kernel === kernelRaw && d.pc_type === pcRaw &&
+        d.estimator === estRaw && d.coef === coefRaw
       );
 
-      if(!subset.length){
-        Plotly.newPlot("plot",[],{paper_bgcolor:"#050712",plot_bgcolor:"#050712",xaxis:{visible:false},yaxis:{visible:false}});
+      if (subset.length === 0) {
+        Plotly.newPlot("plot", [], {
+          paper_bgcolor: "#050712", plot_bgcolor: "#050712",
+          xaxis: { visible: false }, yaxis: { visible: false }
+        });
         return;
       }
 
-      const dates = subset.map(d=>d.date);
-      const ests  = subset.map(d=>parseFloat(d.estimate));
-      const lower = subset.map(d=>parseFloat(d.lower));
-      const upper = subset.map(d=>parseFloat(d.upper));
+      const dates = subset.map(d => d.date);
+      const ests  = subset.map(d => parseFloat(d.estimate));
+      const lower = subset.map(d => parseFloat(d.lower));
+      const upper = subset.map(d => parseFloat(d.upper));
 
-      Plotly.newPlot("plot",[
+      Plotly.newPlot("plot", [
         {
-          x:[...dates,...dates.slice().reverse()],
-          y:[...upper,...lower.slice().reverse()],
-          fill:"toself", fillcolor:"rgba(49,225,255,0.12)",
-          line:{color:"transparent"}, name:"CI", hoverinfo:"skip"
+          x: [...dates, ...dates.slice().reverse()],
+          y: [...upper, ...lower.slice().reverse()],
+          fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
+          line: { color: "transparent" }, name: "CI"
         },
         {
-          // Wide invisible line for easy hover capture
-          x:dates, y:ests, mode:"lines", name:"",
-          line:{width:24, color:"transparent"},
-          hoverinfo:"x+y", hoverlabel:{namelength:0},
-          showlegend:false
-        },
-        {
-          // Visible cyan line on top
-          x:dates, y:ests, mode:"lines", name:"",
-          line:{width:2, color:"#31e1ff"}, hoverinfo:"skip",
-          showlegend:false
+          x: dates, y: ests, mode: "lines", name: "",
+          line: { width: 2, color: "#31e1ff" }
         }
-      ],{
-        showlegend:false,
-        paper_bgcolor:"#050712", plot_bgcolor:"#050712",
-        margin:{l:60,r:40,t:40,b:50},
-        uirevision:"locked",
-        xaxis:{
-          type:"date", tickformat:"%Y", tickangle:0, showgrid:false,
-          linecolor:"#3b3f55", nticks:7, fixedrange:true
+      ], {
+        showlegend: false,
+        paper_bgcolor: "#050712", plot_bgcolor: "#050712",
+        margin: { l: 60, r: 40, t: 40, b: 50 },
+        xaxis: {
+          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
+          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
         },
-        yaxis:{
-          zeroline:true, zerolinecolor:"#303548", showgrid:false,
-          linecolor:"#3b3f55", tickformat:".2f", fixedrange:true
-        },
-        hovermode:"closest"
-      },{responsive:true});
-
-      // gd is the Plotly graph div — .on() is registered by Plotly after newPlot
-      const gd = document.getElementById("plot");
-
-      gd.on("plotly_hover", function(eventData){
-        const pt = eventData.points.find(p => p.curveNumber === 1);
-        if(!pt) return;
-
-        const layout = gd._fullLayout;
-        const xaxis  = layout.xaxis;
-        const yaxis  = layout.yaxis;
-        const margin = layout.margin;
-        const plotH  = yaxis._length;
-        const plotW  = xaxis._length;
-
-        const hx   = pt.x;
-        const hy   = pt.y;
-        const hxMs = new Date(hx).getTime();
-
-        const dotPxX = margin.l + xaxis.d2p(hxMs);
-        const dotPxY = margin.t + yaxis.d2p(hy);
-        const axisY  = margin.t + plotH;
-
-        // Value bubble — positioned relative to #plot div
-        const vb = document.getElementById('tv-val');
-        vb.textContent = hy.toFixed(2);
-        vb.style.display = 'block';
-        const bubbleW = vb.offsetWidth;
-        if(plotW - (dotPxX - margin.l) < bubbleW + 20){
-          vb.style.left = (dotPxX - bubbleW - 10) + 'px';
-          vb.classList.add('flip');
-        } else {
-          vb.style.left = (dotPxX + 10) + 'px';
-          vb.classList.remove('flip');
+        yaxis: {
+          zeroline: true, zerolinecolor: "#303548",
+          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
         }
-        vb.style.top = (dotPxY - vb.offsetHeight/2) + 'px';
-
-        // Date bubble
-        const db = document.getElementById('tv-date');
-        const isoStr = (typeof hx==='string') ? hx : new Date(hx).toISOString().slice(0,10);
-        db.textContent = formatDateLabel(isoStr);
-        db.style.display = 'block';
-        const dbHalfW = db.offsetWidth / 2;
-        let dbLeft = dotPxX;
-        if(dbLeft - dbHalfW < margin.l)         dbLeft = margin.l + dbHalfW;
-        if(dbLeft + dbHalfW > margin.l + plotW) dbLeft = margin.l + plotW - dbHalfW;
-        db.style.left = dbLeft + 'px';
-        db.style.top  = (axisY + 2) + 'px';
-
-        // Dot via Plotly annotation (fixedrange:true prevents any axis shift)
-        Plotly.relayout("plot",{
-          annotations:[{
-            x:hx, y:hy, xref:"x", yref:"y",
-            showarrow:false, text:"",
-            bgcolor:"#31e1ff",
-            width:10, height:10,
-            borderpad:5,
-            bordercolor:"#05060a",
-            borderwidth:2
-          }]
-        });
-      });
-
-      gd.on("plotly_unhover", function(){
-        hideTooltips();
-        Plotly.relayout("plot",{annotations:[]});
-      });
+      }, { responsive: true });
     }
   </script>
+
 </body>
 </html>
