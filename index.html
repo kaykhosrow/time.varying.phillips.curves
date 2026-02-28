@@ -534,7 +534,7 @@
       user-select: none;
     }
 
-    /* Tiny nudge so Plotly hover box doesn't sit on the dot */
+    /* Tiny nudge so Plotly hover box doesn't sit exactly on the dot */
     #plot .hoverlayer {
       transform: translateX(1.5px);
     }
@@ -1017,8 +1017,10 @@
         d.estimator === estRaw && d.coef === coefRaw
       );
 
+      const plotDiv = document.getElementById("plot");
+
       if (subset.length === 0) {
-        Plotly.newPlot("plot", [], {
+        Plotly.newPlot(plotDiv, [], {
           paper_bgcolor: "#050712", plot_bgcolor: "#050712",
           xaxis: { visible: false }, yaxis: { visible: false }
         });
@@ -1104,11 +1106,10 @@
 
       const config = { responsive: true };
 
-      const plotDiv = document.getElementById("plot");
-
       Plotly.newPlot(plotDiv, data, layout, config).then(gd => {
-        if (gd._hasHoverDot) return;
-        gd._hasHoverDot = true;
+        // Always reset listeners so hover dot works after every change
+        gd.removeAllListeners('plotly_hover');
+        gd.removeAllListeners('plotly_unhover');
 
         gd.on("plotly_hover", ev => {
           const pt = ev.points.find(p => p.curveNumber === 1);
