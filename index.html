@@ -541,11 +541,10 @@
       display: inline-block;
     }
 
-    /* Nudge the entire hover layer a bit so:
-       - main tooltip doesn't sit exactly on the dot
-       - x-axis hover box arrow is slightly below the axis line */
-    #plot .hoverlayer {
-      transform: translate(1.5px, 3px);
+    /* Nudge ONLY the axis hover label down a bit so the arrow
+       doesn't sit exactly on the x-axis line */
+    #plot .hoverlayer .axistext {
+      transform: translateY(3px);
     }
 
   </style>
@@ -1151,8 +1150,7 @@
           }, [2]);
         });
 
-        // We do NOT hide the dot on unhover anymore,
-        // so it stays where it was even if you click.
+        // Dot stays at last hovered position; no unhover listener.
       });
     }
   </script>
