@@ -41,7 +41,6 @@
       font-size: 16px;
       -webkit-text-size-adjust: none;
       text-size-adjust: none;
-      /* Always full-viewport, always scrollable */
       overflow: auto;
     }
 
@@ -52,7 +51,6 @@
       z-index: 0;
     }
 
-    /* ── Viewport-filling centred stage for BOTH views ── */
     .stage {
       min-height: 100vh;
       display: flex;
@@ -64,24 +62,20 @@
       z-index: 1;
     }
 
-    /* Landing: tighter, no extra top pad */
     #landing-stage {
       min-width: 860px;
     }
 
-    /* App stage: fixed width — nothing inside can ever reflow */
     #app-stage {
       width: 1120px;
       min-width: 1120px;
       min-height: 100vh;
       align-items: stretch;
       justify-content: center;
-      /* Centre horizontally via body scroll */
       margin: 0 auto;
     }
 
     .main-shell {
-      /* kept for landing only */
       width: 820px;
       flex-shrink: 0;
       transform: scale(1.05);
@@ -89,7 +83,6 @@
       position: relative;
     }
 
-    /* Stop click-through on cards */
     .card {
       background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
       border-radius: 16px;
@@ -115,7 +108,6 @@
       flex-shrink: 0;
     }
 
-    /* Footer locked to same width as card */
     #app-footer {
       width: 1120px;
       min-width: 1120px;
@@ -349,7 +341,6 @@
       animation: fadeInNote 0.5s ease-out 0.7s forwards;
     }
 
-    /* ─── App header: locked, never wraps ─── */
     .app-header {
       display: flex;
       justify-content: space-between;
@@ -533,9 +524,6 @@
       white-space: nowrap;
     }
 
-    /* app-footer width set inline above */
-
-    /* Credit line */
     .credit-line {
       text-align: left;
       margin-top: 14px;
@@ -551,10 +539,9 @@
 
 <body onclick="handleBgClick(event)">
 
-  <!-- ══ LANDING STAGE ══ -->
+  <!-- LANDING STAGE -->
   <div id="landing-stage" class="stage">
     <div class="main-shell">
-      <!-- LANDING VIEW -->
       <div id="landing" class="card active">
         <h1>Time-Varying Phillips Curves</h1>
         <p>Browse kernel-based estimates of the Phillips curve over time.</p>
@@ -594,7 +581,6 @@
           <button type="button" class="primary-btn" style="padding: 8px 18px;" onclick="startApp()">Enter</button>
         </div>
 
-        <!-- Map -->
         <div class="map-shell" style="position:relative;">
           <div id="map-tooltip"></div>
           <svg id="regionMap"></svg>
@@ -606,12 +592,11 @@
           <p id="landing-text" class="footer-text-animate" style="margin:0; font-size:0.71rem; color:rgba(255,255,255,0.50); letter-spacing:0.06em; white-space:nowrap;">Developed by Omar Kaykhusraw.</p>
         </div>
       </div>
-    </div><!-- /.main-shell -->
-  </div><!-- /#landing-stage -->
+    </div>
+  </div>
 
-  <!-- ══ APP STAGE ══ -->
+  <!-- APP STAGE -->
   <div id="app-stage" class="stage" style="display:none;">
-    <!-- APP VIEW -->
     <div id="app" class="card">
       <div class="app-header">
         <h2>Time-Varying Parameters of the Phillips Curve</h2>
@@ -656,20 +641,18 @@
         </div>
       </div>
     </div>
+
     <div id="app-footer" style="display:none; margin-top: 20px;">
       <div>
         <hr id="app-footer-hr" class="footer-line-animate" style="border:none; border-top: 1px solid rgba(255,255,255,0.375); margin: 0 0 18px 0;">
         <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
       </div>
     </div>
-
-  </div><!-- /#app-stage -->
+  </div>
 
   <script>
-    // Handle background click to go home — disabled
     function handleBgClick(e) {}
 
-    // Euro Area country ISO codes
     const REGION_COUNTRIES = {
       "euro-area": ["AUT","BEL","CYP","EST","FIN","FRA","DEU","GRC","IRL",
                     "ITA","LVA","LTU","LUX","MLT","NLD","PRT","SVK","SVN","ESP"]
@@ -705,16 +688,13 @@
       }
     }
 
-    // Build D3 map on load
     window.addEventListener('DOMContentLoaded', () => {
       const svg = d3.select('#regionMap');
       const width  = document.getElementById('regionMap').clientWidth || 760;
       const height = 430;
       const tooltip = document.getElementById('map-tooltip');
 
-      const projection = d3.geoMercator()
-        .scale(1)
-        .translate([0, 0]);
+      const projection = d3.geoMercator().scale(1).translate([0, 0]);
       const path = d3.geoPath().projection(projection);
 
       fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
@@ -891,9 +871,7 @@
       const region = document.getElementById("regionSelector").value;
       const file   = REGION_FILES[region];
 
-      // Ensure the app card becomes visible
       document.getElementById("app").classList.add("active");
-
       document.getElementById("landing-stage").style.display = "none";
 
       const appStage = document.getElementById("app-stage");
@@ -1047,7 +1025,17 @@
       const lower = subset.map(d => parseFloat(d.lower));
       const upper = subset.map(d => parseFloat(d.upper));
 
-      // CI band
+      // lock x range to full sample
+      const xRange = [dates[0], dates[dates.length - 1]];
+
+      // lock y range around CI band with small padding
+      let yMin = Math.min(...lower);
+      let yMax = Math.max(...upper);
+      const span = yMax - yMin;
+      const pad  = span === 0 ? 0.1 : span * 0.08;
+      yMin -= pad;
+      yMax += pad;
+
       const ciTrace = {
         x: [...dates, ...dates.slice().reverse()],
         y: [...upper, ...lower.slice().reverse()],
@@ -1057,7 +1045,6 @@
         name: "CI"
       };
 
-      // Main line
       const lineTrace = {
         x: dates,
         y: ests,
@@ -1066,7 +1053,6 @@
         line: { width: 2, color: "#31e1ff" }
       };
 
-      // Hover dot trace (starts invisible)
       const hoverDotTrace = {
         x: [dates[0]],
         y: [ests[0]],
@@ -1096,14 +1082,20 @@
           tickangle: 0,
           showgrid: false,
           linecolor: "#3b3f55",
-          nticks: 7
+          nticks: 7,
+          range: xRange,
+          autorange: false,
+          fixedrange: true
         },
         yaxis: {
           zeroline: true,
           zerolinecolor: "#303548",
           showgrid: false,
           linecolor: "#3b3f55",
-          tickformat: ".2f"
+          tickformat: ".2f",
+          range: [yMin, yMax],
+          autorange: false,
+          fixedrange: true
         }
       };
 
@@ -1112,12 +1104,10 @@
       const plotDiv = document.getElementById("plot");
 
       Plotly.newPlot(plotDiv, data, layout, config).then(gd => {
-        // Attach hover handlers only once per div
         if (gd._hasHoverDot) return;
         gd._hasHoverDot = true;
 
         gd.on("plotly_hover", ev => {
-          // Find point on main line trace (index 1)
           const pt = ev.points.find(p => p.curveNumber === 1);
           if (!pt) return;
 
@@ -1125,7 +1115,7 @@
             x: [[pt.x]],
             y: [[pt.y]],
             opacity: [1]
-          }, [2]); // trace index 2 = hoverDotTrace
+          }, [2]);
         });
 
         gd.on("plotly_unhover", () => {
