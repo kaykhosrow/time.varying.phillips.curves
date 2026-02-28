@@ -29,11 +29,11 @@
 
     html, body {
       height: 100%;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
-      padding: 0;
       min-height: 100vh;
       background: radial-gradient(circle at top, #15192b 0, #05060a 55%);
       color: var(--text-main);
@@ -41,19 +41,8 @@
       font-size: 16px;
       -webkit-text-size-adjust: none;
       text-size-adjust: none;
-      display: flex;
-      justify-content: center;
-      /* Landing: centered; App: top-aligned with padding */
-      align-items: flex-start;
-      min-width: 1000px;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
-
-    /* Landing page: vertically centered */
-    body.landing-active {
-      align-items: center;
-      overflow: hidden;
+      /* Always full-viewport, always scrollable */
+      overflow: auto;
     }
 
     body::before {
@@ -63,20 +52,41 @@
       z-index: 0;
     }
 
-    .main-shell {
-      width: min(1120px, 100% - 40px);
-      margin: 40px auto;
-      flex-shrink: 0;
-      transform: scale(1.05);
-      transform-origin: center center;
+    /* ── Viewport-filling centred stage for BOTH views ── */
+    .stage {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
       position: relative;
       z-index: 1;
     }
 
-    /* App shell: no scaling, fixed layout */
-    .main-shell.app-mode {
-      transform: none;
-      margin: 30px auto;
+    /* Landing: tighter, no extra top pad */
+    #landing-stage {
+      min-width: 860px;
+    }
+
+    /* App stage: fixed width — nothing inside can ever reflow */
+    #app-stage {
+      width: 1120px;
+      min-width: 1120px;
+      min-height: 100vh;
+      align-items: stretch;
+      justify-content: center;
+      /* Centre horizontally via body scroll */
+      margin: 0 auto;
+    }
+
+    .main-shell {
+      /* kept for landing only */
+      width: 820px;
+      flex-shrink: 0;
+      transform: scale(1.05);
+      transform-origin: center center;
+      position: relative;
     }
 
     /* Stop click-through on cards */
@@ -100,8 +110,16 @@
 
     #app {
       background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
-      /* Lock minimum width so inner elements never wrap */
-      min-width: 900px;
+      width: 1120px;
+      min-width: 1120px;
+      flex-shrink: 0;
+    }
+
+    /* Footer locked to same width as card */
+    #app-footer {
+      width: 1120px;
+      min-width: 1120px;
+      flex-shrink: 0;
     }
 
     h1, h2 {
@@ -360,8 +378,8 @@
     #plot {
       flex: 1 1 auto;
       min-height: 520px;
-      /* Lock the plot so it never collapses below a usable width */
-      min-width: 600px;
+      min-width: 880px;
+      width: 880px;
       border-radius: 14px;
       background: #050712;
       padding: 6px 18px 6px 6px;
@@ -515,10 +533,7 @@
       white-space: nowrap;
     }
 
-    /* ─── App footer: locked width to match card ─── */
-    #app-footer {
-      min-width: 900px;
-    }
+    /* app-footer width set inline above */
 
     /* Credit line */
     .credit-line {
@@ -534,8 +549,11 @@
   </style>
 </head>
 
-<body class="landing-active" onclick="handleBgClick(event)">
-  <div class="main-shell" id="mainShell">
+<body onclick="handleBgClick(event)">
+
+  <!-- ══ LANDING STAGE ══ -->
+  <div id="landing-stage" class="stage">
+    <div class="main-shell">
     <!-- LANDING VIEW -->
     <div id="landing" class="card active">
       <h1>Time-Varying Phillips Curves</h1>
@@ -582,13 +600,17 @@
         <svg id="regionMap"></svg>
       </div>
     </div>
-    <div id="landing-credit" style="max-width:820px; margin: 6px auto 0;">
-      <div style="display:inline-grid; grid-template-columns: 1fr;">
+    <div id="landing-credit" style="width:820px; margin: 6px auto 0;">
+      <div style="display:inline-grid; grid-template-columns: 1fr; width:100%;">
         <div id="landing-line" class="footer-line-animate" style="height:1px; background:rgba(255,255,255,0.375); margin: 0 0 13px 0;"></div>
         <p id="landing-text" class="footer-text-animate" style="margin:0; font-size:0.71rem; color:rgba(255,255,255,0.50); letter-spacing:0.06em; white-space:nowrap;">Developed by Omar Kaykhusraw.</p>
       </div>
     </div>
+    </div><!-- /.main-shell -->
+  </div><!-- /#landing-stage -->
 
+  <!-- ══ APP STAGE ══ -->
+  <div id="app-stage" class="stage" style="display:none;">
     <!-- APP VIEW -->
     <div id="app" class="card">
       <div class="app-header">
@@ -641,7 +663,7 @@
       </div>
     </div>
 
-  </div>
+  </div><!-- /#app-stage -->
 
   <script>
     // Handle background click to go home — disabled
@@ -801,12 +823,11 @@
     let coefBySpec = {};
 
     function goBack() {
-      document.getElementById("app").classList.remove("active");
+      document.getElementById("app-stage").style.display = "none";
       document.getElementById("app-footer").style.display = "none";
 
-      // Switch body back to landing layout (vertically centered)
-      document.body.classList.add("landing-active");
-      document.getElementById("mainShell").classList.remove("app-mode");
+      const ls = document.getElementById("landing-stage");
+      ls.style.display = "flex";
 
       const lc = document.getElementById("landing-credit");
       lc.style.display = "block";
@@ -818,7 +839,6 @@
       lcP.classList.remove("footer-text-animate");
       void lcP.offsetWidth;
       lcP.classList.add("footer-text-animate");
-      document.getElementById("landing").classList.add("active");
     }
 
     function cleanValue(val) {
@@ -871,13 +891,10 @@
       const region = document.getElementById("regionSelector").value;
       const file   = REGION_FILES[region];
 
-      document.getElementById("landing").classList.remove("active");
-      document.getElementById("app").classList.add("active");
-      document.getElementById("landing-credit").style.display = "none";
+      document.getElementById("landing-stage").style.display = "none";
 
-      // Switch body to app layout (top-aligned, scrollable)
-      document.body.classList.remove("landing-active");
-      document.getElementById("mainShell").classList.add("app-mode");
+      const appStage = document.getElementById("app-stage");
+      appStage.style.display = "flex";
 
       const af = document.getElementById("app-footer");
       af.style.display = "block";
