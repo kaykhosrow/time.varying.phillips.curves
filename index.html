@@ -65,7 +65,6 @@
       z-index: 1;
     }
 
-    /* Stop click-through on cards */
     .card {
       background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
       border-radius: 16px;
@@ -488,7 +487,6 @@
       white-space: nowrap;
     }
 
-    /* Credit line */
     .credit-line {
       text-align: left;
       margin-top: 14px;
@@ -498,7 +496,6 @@
       pointer-events: none;
       user-select: none;
     }
-
   </style>
 </head>
 
@@ -544,12 +541,12 @@
         <button type="button" class="primary-btn" style="padding: 8px 18px;" onclick="startApp()">Enter</button>
       </div>
 
-      <!-- Map -->
       <div class="map-shell" style="position:relative;">
         <div id="map-tooltip"></div>
         <svg id="regionMap"></svg>
       </div>
     </div>
+
     <div id="landing-credit" style="max-width:820px; margin: 6px auto 0;">
       <div style="display:inline-grid; grid-template-columns: 1fr;">
         <div id="landing-line" class="footer-line-animate" style="height:1px; background:rgba(255,255,255,0.375); margin: 0 0 13px 0;"></div>
@@ -602,20 +599,21 @@
         </div>
       </div>
     </div>
+
     <div id="app-footer" style="display:none; margin-top: 20px;">
       <div style="max-width: 1120px;">
         <hr id="app-footer-hr" class="footer-line-animate" style="border:none; border-top: 1px solid rgba(255,255,255,0.375); margin: 0 0 18px 0;">
-        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
+        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;">
+          <b>Note</b>: Estimates generated using
+          Giraitis, L., Kapetanios, G. and Yates, T. (2014, 2018) and Giraitis, L., Kapetanios, G. and Marcellino, M. (2021).
+        </p>
       </div>
     </div>
-
   </div>
 
   <script>
-    // Handle background click to go home — disabled
     function handleBgClick(e) {}
 
-    // Euro Area country ISO codes
     const REGION_COUNTRIES = {
       "euro-area": ["AUT","BEL","CYP","EST","FIN","FRA","DEU","GRC","IRL",
                     "ITA","LVA","LTU","LUX","MLT","NLD","PRT","SVK","SVN","ESP"]
@@ -651,7 +649,6 @@
       }
     }
 
-    // Build D3 map on load
     window.addEventListener('DOMContentLoaded', () => {
       const svg = d3.select('#regionMap');
       const width  = document.getElementById('regionMap').clientWidth || 760;
@@ -675,19 +672,16 @@
             "620":"PRT","703":"SVK","705":"SVN","724":"ESP"
           };
 
-          // Filter out Antarctica and sub-features outside inhabited world
           const filtered = {
             type: 'FeatureCollection',
             features: countries.features
-              .filter(d => String(d.id) !== '10') // Antarctica
+              .filter(d => String(d.id) !== '10')
               .map(d => {
-                // For multipolygon countries, strip polygons outside lon -170..180, lat -60..85
                 if (d.geometry && d.geometry.type === 'MultiPolygon') {
                   const polys = d.geometry.coordinates.filter(poly => {
                     const ring = poly[0];
                     const avgLon = ring.reduce((s,p) => s+p[0], 0) / ring.length;
                     const avgLat = ring.reduce((s,p) => s+p[1], 0) / ring.length;
-                    // Exclude remote Pacific/Atlantic islands and French Guiana
                     const iso = numericToAlpha3[String(d.id).padStart(3,'0')];
                     if (iso === 'FRA') return avgLon > -10 && avgLat > 40;
                     return avgLon > -170 && avgLat > -58 && avgLat < 84;
@@ -770,13 +764,14 @@
     let fullData  = [];
     let h1Values  = [];
     let coefBySpec = {};
+    // y-baseline for x-axis marker
+    let currentAxisBaselineY = null;
 
     function goBack() {
       document.getElementById("app").classList.remove("active");
       document.getElementById("app-footer").style.display = "none";
       const lc = document.getElementById("landing-credit");
       lc.style.display = "block";
-      // Re-animate the separator line only (not the wrapper)
       const lcLine = document.getElementById("landing-line");
       const lcP    = document.getElementById("landing-text");
       lcLine.classList.remove("footer-line-animate");
@@ -792,7 +787,6 @@
       return (val || "").trim().replace(/^"|"$/g, "").replace(/\r/g, "");
     }
 
-    // Convert DD/MM/YYYY to YYYY-MM-DD for Plotly
     function parseDate(val) {
       const s = cleanValue(val);
       const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -850,7 +844,6 @@
       afHr.classList.add("footer-line-animate");
       afP.classList.add("footer-text-animate");
 
-      // Wait two frames for layout to settle, then size the slider
       requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
 
       fetch(file)
@@ -935,7 +928,6 @@
       const sel   = document.getElementById("coef");
       sel.innerHTML = "";
 
-      // Fixed display order: Constant, inflation terms, then Unemployment
       const order = ["(Intercept)", "dpi_lag1", "dpi_lead1", "du"];
       const ordered = [
         ...order.filter(k => coefs.includes(k)),
@@ -948,7 +940,6 @@
         sel.appendChild(o);
       });
 
-      // Default selection: du (Unemployment) if present
       const hasDu = coefs.includes("du");
       sel.value = hasDu ? "du" : (ordered[0] || "");
     }
@@ -967,7 +958,7 @@
     function updatePlot() {
       if (!fullData.length) return;
 
-      const hNum     = getCurrentH1Numeric();
+      const hNum      = getCurrentH1Numeric();
       const kernelRaw = document.getElementById("kernel").value;
       const pcRaw     = document.getElementById("pcType").value;
       const estRaw    = document.getElementById("estimator").value;
@@ -982,8 +973,10 @@
 
       if (subset.length === 0) {
         Plotly.newPlot("plot", [], {
-          paper_bgcolor: "#050712", plot_bgcolor: "#050712",
-          xaxis: { visible: false }, yaxis: { visible: false }
+          paper_bgcolor: "#050712",
+          plot_bgcolor: "#050712",
+          xaxis: { visible: false },
+          yaxis: { visible: false }
         });
         return;
       }
@@ -993,51 +986,164 @@
       const lower = subset.map(d => parseFloat(d.lower));
       const upper = subset.map(d => parseFloat(d.upper));
 
+      const yVals = [...ests, ...lower, ...upper].filter(v => !isNaN(v));
+      let yMin = Math.min.apply(null, yVals);
+      let yMax = Math.max.apply(null, yVals);
+      const pad = (yMax - yMin) * 0.12 || 0.1;
+      yMin -= pad;
+      yMax += pad;
+      currentAxisBaselineY = yMin;  // use bottom of range as x-axis baseline for marker
+
       Plotly.newPlot("plot", [
         {
           x: [...dates, ...dates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
-          fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" }, name: "CI"
+          fill: "toself",
+          fillcolor: "rgba(49,225,255,0.12)",
+          line: { color: "transparent" },
+          name: "CI",
+          hoverinfo: "skip"
         },
         {
-          x: dates, y: ests, mode: "lines", name: "",
+          x: dates,
+          y: ests,
+          mode: "lines",
+          name: "",
           line: { width: 2, color: "#31e1ff" },
-          // ← ADDED: invisible markers on every point; one becomes visible on hover
+          hoverinfo: "skip"      // no default hover box
+        },
+        {
+          // highlight point + value label on the series
+          x: [],
+          y: [],
+          mode: "markers+text",
+          name: "",
           marker: {
-            size: ests.map(() => 0),
+            size: 7,
             color: "#31e1ff",
             line: { color: "#05060a", width: 2 }
-          }
+          },
+          text: [],
+          textposition: "middle right",
+          textoffset: 14,        // push label to the right of the dot
+          textfont: {
+            color: "#f5f5f7",
+            size: 11,
+            family: "system-ui, sans-serif"
+          },
+          cliponaxis: false,
+          hoverinfo: "skip"
+        },
+        {
+          // x-axis marker at hovered date
+          x: [],
+          y: [],
+          mode: "markers",
+          name: "",
+          marker: {
+            size: 7,
+            color: "#31e1ff",
+            line: { color: "#05060a", width: 2 }
+          },
+          cliponaxis: false,
+          hoverinfo: "skip"
         }
       ], {
         showlegend: false,
-        paper_bgcolor: "#050712", plot_bgcolor: "#050712",
+        paper_bgcolor: "#050712",
+        plot_bgcolor: "#050712",
         margin: { l: 60, r: 40, t: 40, b: 50 },
         xaxis: {
-          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
-          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
+          type: "date",
+          tickformat: "%Y",
+          hoverformat: "%b %Y",
+          tickangle: 0,
+          showgrid: false,
+          linecolor: "#3b3f55",
+          nticks: 7,
+          tickpadding: 10
+          // no spikes / vertical lines
         },
         yaxis: {
-          zeroline: true, zerolinecolor: "#303548",
-          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
-        }
+          zeroline: true,
+          zerolinecolor: "#303548",
+          showgrid: false,
+          linecolor: "#3b3f55",
+          tickformat: ".2f",
+          range: [yMin, yMax]
+        },
+        annotations: []
       }, { responsive: true });
 
-      // ← ADDED: show dot at hovered point, hide on unhover
-      const plotDiv = document.getElementById("plot");
-      plotDiv.on('plotly_hover', function(data) {
-        const pt = (data.points || []).find(p => p.curveNumber === 1);
+      const plotEl = document.getElementById("plot");
+
+      plotEl.on("plotly_hover", function(data) {
+        // point on the line trace
+        const pt = data.points.find(p => p.curveNumber === 1);
         if (!pt) return;
+
+        const val = pt.y.toFixed(2);  // only estimate in box
+        const d = new Date(pt.x);
+        const dateLabel = d.toLocaleString("en-GB", {
+          month: "short",
+          year: "numeric"
+        });
+
+        // dot + value label on the time series
         Plotly.restyle("plot", {
-          "marker.size": [ests.map((_, i) => i === pt.pointIndex ? 9 : 0)]
-        }, [1]);
+          x: [[pt.x]],
+          y: [[pt.y]],
+          text: [[val]]
+        }, [2]);
+
+        // marker on x-axis baseline
+        Plotly.restyle("plot", {
+          x: [[pt.x]],
+          y: [[currentAxisBaselineY]]
+        }, [3]);
+
+        // custom date box slightly below the x-axis
+        Plotly.relayout("plot", {
+          annotations: [{
+            x: pt.x,
+            xref: "x",
+            y: -0.05,
+            yref: "paper",
+            yshift: 20,
+            text: dateLabel,
+            showarrow: false,
+            align: "center",
+            font: {
+              size: 11,
+              color: "#f5f5f7"
+            },
+            bgcolor: "rgba(5,7,18,0.96)",
+            bordercolor: "#3b3f55",
+            borderwidth: 1,
+            borderpad: 4,
+            opacity: 0.96
+          }]
+        });
       });
-      plotDiv.on('plotly_unhover', function() {
-        Plotly.restyle("plot", { "marker.size": [ests.map(() => 0)] }, [1]);
+
+      plotEl.on("plotly_unhover", function() {
+        // Clear series highlight
+        Plotly.restyle("plot", {
+          x: [[]],
+          y: [[]],
+          text: [[]]
+        }, [2]);
+
+        // Clear x-axis marker
+        Plotly.restyle("plot", {
+          x: [[]],
+          y: [[]]
+        }, [3]);
+
+        // Remove date box
+        Plotly.relayout("plot", { annotations: [] });
       });
     }
   </script>
-
 </body>
 </html>
