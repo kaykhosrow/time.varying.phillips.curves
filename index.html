@@ -776,6 +776,7 @@
       document.getElementById("app-footer").style.display = "none";
       const lc = document.getElementById("landing-credit");
       lc.style.display = "block";
+      // Re-animate the separator line only (not the wrapper)
       const lcLine = document.getElementById("landing-line");
       const lcP    = document.getElementById("landing-text");
       lcLine.classList.remove("footer-line-animate");
@@ -966,7 +967,7 @@
     function updatePlot() {
       if (!fullData.length) return;
 
-      const hNum      = getCurrentH1Numeric();
+      const hNum     = getCurrentH1Numeric();
       const kernelRaw = document.getElementById("kernel").value;
       const pcRaw     = document.getElementById("pcType").value;
       const estRaw    = document.getElementById("estimator").value;
@@ -997,20 +998,11 @@
           x: [...dates, ...dates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
           fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" }, name: "CI",
-          hoverinfo: "skip"
+          line: { color: "transparent" }, name: "CI"
         },
         {
           x: dates, y: ests, mode: "lines", name: "",
           line: { width: 2, color: "#31e1ff" }
-        },
-        {
-          x: [], y: [], mode: "markers+text", name: "",
-          marker: { size: 7, color: "#31e1ff", line: { color: "#05060a", width: 2 } },
-          text: [], textposition: "middle right",
-          textfont: { color: "#f5f5f7", size: 11, family: "system-ui, sans-serif" },
-          cliponaxis: false,
-          hoverinfo: "skip"
         }
       ], {
         showlegend: false,
@@ -1018,34 +1010,14 @@
         margin: { l: 60, r: 40, t: 40, b: 50 },
         xaxis: {
           type: "date", tickformat: "%Y", hoverformat: "%b %Y",
-          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7,
-          showspikes: true, spikecolor: "#31e1ff",
-          spikethickness: 1, spikedash: "solid", spikemode: "toaxis+marker",
-          spikesnap: "data", tickpadding: 10
+          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
         },
         yaxis: {
           zeroline: true, zerolinecolor: "#303548",
           showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
         }
       }, { responsive: true });
-
-      const plotEl = document.getElementById("plot");
-      plotEl.on("plotly_hover", function(data) {
-        const pt = data.points.find(p => p.curveNumber === 1);
-        if (!pt) return;
-        const d = new Date(pt.x);
-        const label = d.toLocaleString("en-GB", { month: "short", year: "numeric" });
-        const val   = pt.y.toFixed(2);
-        Plotly.restyle("plot", {
-          x: [[pt.x]], y: [[pt.y]],
-          text: [["  " + label + "   " + val]]
-        }, [2]);
-      });
-      plotEl.on("plotly_unhover", function() {
-        Plotly.restyle("plot", { x: [[]], y: [[]], text: [[]] }, [2]);
-      });
     }
-
   </script>
 
 </body>
