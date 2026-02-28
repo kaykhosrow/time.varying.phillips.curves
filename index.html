@@ -967,7 +967,7 @@
     function updatePlot() {
       if (!fullData.length) return;
 
-      const hNum     = getCurrentH1Numeric();
+      const hNum      = getCurrentH1Numeric();
       const kernelRaw = document.getElementById("kernel").value;
       const pcRaw     = document.getElementById("pcType").value;
       const estRaw    = document.getElementById("estimator").value;
@@ -994,6 +994,7 @@
       const upper = subset.map(d => parseFloat(d.upper));
 
       Plotly.newPlot("plot", [
+        // CI band — no tooltip
         {
           x: [...dates, ...dates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
@@ -1001,15 +1002,18 @@
           line: { color: "transparent" }, name: "CI",
           hoverinfo: "skip"
         },
+        // Estimate line
         {
           x: dates, y: ests, mode: "lines", name: "",
           line: { width: 2, color: "#31e1ff" },
+          // All markers invisible by default; one is shown on hover via plotly_hover
           marker: {
             size: ests.map(() => 0),
             color: "#31e1ff",
             line: { color: "#05060a", width: 2 }
           },
-          hovertemplate: "  %{x|%b %Y}    %{y:.4f}<extra></extra>"
+          // Tooltip: date + estimate with padding so label clears the dot
+          hovertemplate: "%{x|%b %Y}&nbsp;&nbsp;&nbsp;%{y:.4f}<extra></extra>"
         }
       ], {
         showlegend: false,
@@ -1033,21 +1037,17 @@
         }
       }, { responsive: true });
 
+      // Show a single dot at the hovered point, hidden otherwise
       const plotDiv = document.getElementById("plot");
-
       plotDiv.on('plotly_hover', function(data) {
-        if (!data.points || !data.points.length) return;
-        const pt = data.points.find(p => p.curveNumber === 1);
+        const pt = (data.points || []).find(p => p.curveNumber === 1);
         if (!pt) return;
         Plotly.restyle("plot", {
           "marker.size": [ests.map((_, i) => i === pt.pointIndex ? 9 : 0)]
         }, [1]);
       });
-
       plotDiv.on('plotly_unhover', function() {
-        Plotly.restyle("plot", {
-          "marker.size": [ests.map(() => 0)]
-        }, [1]);
+        Plotly.restyle("plot", { "marker.size": [ests.map(() => 0)] }, [1]);
       });
     }
   </script>
