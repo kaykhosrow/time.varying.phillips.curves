@@ -4,13 +4,10 @@
   <meta charset="UTF-8">
   <title>Time-Varying Phillips Curves</title>
 
-  <!-- D3 for proper map rendering -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
-  <!-- Plotly -->
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 
-  <!-- Dark, minimal styling -->
   <style>
     :root {
       --bg: #05060a;
@@ -23,478 +20,210 @@
       --border-subtle: #25273a;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
-    html, body {
-      overflow: hidden;
-      height: 100%;
-    }
+    html, body { overflow: hidden; height: 100%; }
 
     body {
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
+      margin: 0; padding: 0; min-height: 100vh;
       background: radial-gradient(circle at top, #15192b 0, #05060a 55%);
       color: var(--text-main);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
       font-size: 16px;
-      -webkit-text-size-adjust: none;
-      text-size-adjust: none;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      -webkit-text-size-adjust: none; text-size-adjust: none;
+      display: flex; justify-content: center; align-items: center;
       min-width: 1000px;
     }
 
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      z-index: 0;
-    }
+    body::before { content: ''; position: fixed; inset: 0; z-index: 0; }
 
     .main-shell {
       width: min(1120px, 100% - 40px);
-      margin: 40px auto;
-      flex-shrink: 0;
-      transform: scale(1.05);
-      transform-origin: center center;
-      position: relative;
-      z-index: 1;
+      margin: 40px auto; flex-shrink: 0;
+      transform: scale(1.05); transform-origin: center center;
+      position: relative; z-index: 1;
     }
 
     .card {
       background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
-      border-radius: 16px;
-      border: 1px solid var(--border-subtle);
-      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
-      padding: 24px 28px;
-      backdrop-filter: blur(14px);
-      cursor: default;
+      border-radius: 16px; border: 1px solid var(--border-subtle);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+      padding: 24px 28px; backdrop-filter: blur(14px); cursor: default;
     }
 
     #landing {
-      max-width: 820px;
-      margin: 0 auto;
-      background: radial-gradient(circle at right,
-                  rgba(49,225,255,0.08), transparent 60%),
+      max-width: 820px; margin: 0 auto;
+      background: radial-gradient(circle at right, rgba(49,225,255,0.08), transparent 60%),
                   linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
     }
 
-    #app {
-      background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
-    }
+    #app { background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%); }
 
-    h1, h2 {
-      margin: 0;
-      font-weight: 600;
-      letter-spacing: 0.02em;
-    }
+    h1, h2 { margin: 0; font-weight: 600; letter-spacing: 0.02em; }
+    h1 { font-size: 1.8rem; } h2 { font-size: 1.5rem; }
 
-    h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.5rem; }
-
-    p {
-      margin: 8px 0;
-      color: var(--text-subtle);
-      line-height: 1.5;
-    }
+    p { margin: 8px 0; color: var(--text-subtle); line-height: 1.5; }
 
     .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 4px 12px;
-      border-radius: 999px;
-      background: rgba(49, 225, 255, 0.09);
-      border: 1px solid rgba(49, 225, 255, 0.18);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--accent);
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 4px 12px; border-radius: 999px;
+      background: rgba(49,225,255,0.09); border: 1px solid rgba(49,225,255,0.18);
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);
     }
 
     .pill-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 10px var(--accent);
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 10px var(--accent);
     }
 
-    .controls-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px 18px;
-      margin-top: 24px;
-      align-items: flex-end;
-    }
+    .controls-row { display: flex; flex-wrap: wrap; gap: 16px 18px; margin-top: 24px; align-items: flex-end; }
 
-    .app-controls-row {
-      margin-top: 32px;
-      flex-wrap: nowrap;
-      justify-content: space-between;
-    }
+    .app-controls-row { margin-top: 32px; flex-wrap: nowrap; justify-content: space-between; }
+    .app-controls-row .control-group { flex: 1 1 0; }
+    .app-controls-row .control-group select { width: 100%; }
 
-    .app-controls-row .control-group {
-      flex: 1 1 0;
-    }
-
-    .app-controls-row .control-group select {
-      width: 100%;
-    }
-
-    .control-group {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      align-items: flex-start;
-    }
-
-    .control-label {
-      font-size: 0.8rem;
-      color: var(--text-subtle);
-      margin-left: 5px;
-    }
-
+    .control-group { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+    .control-label { font-size: 0.8rem; color: var(--text-subtle); margin-left: 5px; }
     .control-group select { width: 220px; }
 
     select {
-      padding: 8px 10px;
-      font-size: 0.9rem;
-      border-radius: 10px;
-      border: 1px solid var(--border-subtle);
-      background: #050712;
-      color: var(--text-main);
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
-      cursor: pointer;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease,
-                  background 0.2s ease, transform 0.05s ease;
+      padding: 8px 10px; font-size: 0.9rem; border-radius: 10px;
+      border: 1px solid var(--border-subtle); background: #050712; color: var(--text-main);
+      outline: none; appearance: none; -webkit-appearance: none; cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.05s ease;
     }
-
     select:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.35);
-      background: #070918;
+      border-color: var(--accent); box-shadow: 0 0 0 1px rgba(49,225,255,0.35); background: #070918;
     }
 
     button {
-      padding: 8px 14px;
-      font-size: 0.9rem;
-      border-radius: 10px;
-      border: 1px solid var(--border-subtle);
-      background: #050712;
-      color: var(--text-main);
-      outline: none;
-      cursor: pointer;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease,
-                  background 0.2s ease, transform 0.05s ease;
-      white-space: nowrap;
-      height: 36px;
+      padding: 8px 14px; font-size: 0.9rem; border-radius: 10px;
+      border: 1px solid var(--border-subtle); background: #050712; color: var(--text-main);
+      outline: none; cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, transform 0.05s ease;
+      white-space: nowrap; height: 36px;
     }
-
     button:hover {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.35);
-      background: #070918;
-      transform: translateY(-1px);
+      border-color: var(--accent); box-shadow: 0 0 0 1px rgba(49,225,255,0.35);
+      background: #070918; transform: translateY(-1px);
     }
-
-    button:active {
-      transform: translateY(1px);
-      box-shadow: 0 0 0 1px rgba(49, 225, 255, 0.2);
-    }
+    button:active { transform: translateY(1px); box-shadow: 0 0 0 1px rgba(49,225,255,0.2); }
 
     .primary-btn {
-      background: radial-gradient(circle at 0 0,
-                    rgba(49, 225, 255, 0.28), transparent 55%),
+      background: radial-gradient(circle at 0 0, rgba(49,225,255,0.28), transparent 55%),
                   linear-gradient(135deg, #0d90b8, #31e1ff);
-      border: none;
-      color: #05060a;
-      font-weight: 600;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-      height: auto;
-      padding: 8px 32px;
-      border-radius: 10px;
-      will-change: transform;
-      isolation: isolate;
+      border: none; color: #05060a; font-weight: 600;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      height: auto; padding: 8px 32px; border-radius: 10px;
+      will-change: transform; isolation: isolate;
     }
-
     .primary-btn:hover {
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.75);
-      transform: translateY(-1px);
-      border: none;
-      background: radial-gradient(circle at 0 0,
-                    rgba(49, 225, 255, 0.35), transparent 55%),
+      box-shadow: 0 12px 28px rgba(0,0,0,0.75); transform: translateY(-1px); border: none;
+      background: radial-gradient(circle at 0 0, rgba(49,225,255,0.35), transparent 55%),
                   linear-gradient(135deg, #10a4cf, #4ae5ff);
     }
+    .primary-btn:active { transform: translateY(1px); box-shadow: 0 4px 14px rgba(0,0,0,0.7); }
 
-    .primary-btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.7);
-    }
-
-    .landing-region-group {
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-    }
-
+    .landing-region-group { flex-direction: row; align-items: center; gap: 10px; }
     .landing-region-group .control-label { margin: 0; }
-
-    #landing .controls-row {
-      align-items: center;
-      justify-content: space-between;
-    }
+    #landing .controls-row { align-items: center; justify-content: space-between; }
 
     .pill-button {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(49, 225, 255, 0.09);
-      border: 1px solid rgba(49, 225, 255, 0.18);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--accent);
-      height: auto;
-      box-shadow: none;
-      width: 80px;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 4px 10px; border-radius: 999px;
+      background: rgba(49,225,255,0.09); border: 1px solid rgba(49,225,255,0.18);
+      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);
+      height: auto; box-shadow: none; width: 80px;
     }
-
     .pill-button:hover {
-      background: rgba(49, 225, 255, 0.14);
-      border-color: rgba(49, 225, 255, 0.28);
-      color: var(--accent);
-      transform: none;
-      box-shadow: 0 0 12px rgba(49, 225, 255, 0.25);
+      background: rgba(49,225,255,0.14); border-color: rgba(49,225,255,0.28);
+      color: var(--accent); transform: none; box-shadow: 0 0 12px rgba(49,225,255,0.25);
     }
 
-    #landing, #app {
-      display: none;
-      animation: fadeIn 0.4s ease-out;
-    }
-
+    #landing, #app { display: none; animation: fadeIn 0.4s ease-out; }
     #landing.active, #app.active { display: block; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+    @keyframes revealLine { 0% { width:0; } 100% { width:100%; } }
+    @keyframes fadeInNote { 0% { opacity:0; transform:translateY(3px); } 100% { opacity:1; transform:translateY(0); } }
 
-    @keyframes revealLine {
-      0%   { width: 0; }
-      100% { width: 100%; }
-    }
+    .footer-line-animate { width:0; overflow:hidden; animation: revealLine 0.9s cubic-bezier(0.4,0,0.2,1) forwards; }
+    .footer-text-animate { opacity:0; animation: fadeInNote 0.5s ease-out 0.7s forwards; }
 
-    @keyframes fadeInNote {
-      0%   { opacity: 0; transform: translateY(3px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
+    .app-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:12px; }
+    .app-header-right { display:flex; flex-direction:row; align-items:center; gap:10px; }
 
-    .footer-line-animate {
-      width: 0;
-      overflow: hidden;
-      animation: revealLine 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-    }
-
-    .footer-text-animate {
-      opacity: 0;
-      animation: fadeInNote 0.5s ease-out 0.7s forwards;
-    }
-
-    .app-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-      gap: 12px;
-    }
-
-    .app-header-right {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .plot-shell {
-      margin-top: 18px;
-      display: flex;
-      gap: 18px;
-      align-items: stretch;
-    }
+    .plot-shell { margin-top:18px; display:flex; gap:18px; align-items:stretch; }
 
     #plot {
-      flex: 1 1 auto;
-      min-height: 520px;
-      border-radius: 14px;
-      background: #050712;
-      padding: 6px 18px 6px 6px;
-      overflow: hidden;
+      flex: 1 1 auto; min-height: 520px; border-radius: 14px;
+      background: #050712; padding: 6px 18px 6px 6px; overflow: hidden;
+      position: relative; /* needed for overlay */
     }
 
-    .slider-shell {
-      width: 110px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+    /* The SVG overlay that sits on top of the Plotly canvas */
+    #hover-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      pointer-events: none;
+      overflow: visible;
     }
 
+    .slider-shell { width:110px; display:flex; flex-direction:column; align-items:center; }
     .slider-column {
-      width: 100%;
-      flex: 1 1 auto;
-      border-radius: 14px;
-      background: radial-gradient(circle at bottom,
-                  rgba(49,225,255,0.1), transparent 55%);
-      border: 1px solid var(--border-subtle);
-      padding: 12px 4px 12px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
+      width:100%; flex:1 1 auto; border-radius:14px;
+      background: radial-gradient(circle at bottom, rgba(49,225,255,0.1), transparent 55%);
+      border:1px solid var(--border-subtle); padding:12px 4px 12px;
+      display:flex; flex-direction:column; align-items:center; gap:8px;
     }
-
     .slider-wrapper {
-      width: 100%;
-      flex: 1 1 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 0;
-      position: relative;
+      width:100%; flex:1 1 auto; display:flex; align-items:center;
+      justify-content:center; min-height:0; position:relative;
     }
 
     #bandwidthSlider {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 200px;
-      height: 18px;
-      background: transparent;
-      outline: none;
-      transform: rotate(-90deg);
-      cursor: pointer;
-      position: absolute;
-      flex-shrink: 0;
+      -webkit-appearance:none; appearance:none; width:200px; height:18px;
+      background:transparent; outline:none; transform:rotate(-90deg);
+      cursor:pointer; position:absolute; flex-shrink:0;
     }
-
     #bandwidthSlider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 12px rgba(49, 225, 255, 0.8);
-      border: 1px solid #02141b;
-      margin-top: -5.5px;
+      -webkit-appearance:none; appearance:none; width:18px; height:18px;
+      border-radius:50%; background:var(--accent); box-shadow:0 0 12px rgba(49,225,255,0.8);
+      border:1px solid #02141b; margin-top:-5.5px;
     }
-
-    #bandwidthSlider::-moz-range-thumb {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: var(--accent);
-      border: none;
-    }
-
-    #bandwidthSlider::-webkit-slider-runnable-track {
-      border-radius: 999px;
-      background: #050712;
-      height: 7px;
-    }
-
-    #bandwidthSlider::-moz-range-track {
-      border-radius: 999px;
-      background: #050712;
-      height: 7px;
-    }
+    #bandwidthSlider::-moz-range-thumb { width:18px; height:18px; border-radius:50%; background:var(--accent); border:none; }
+    #bandwidthSlider::-webkit-slider-runnable-track { border-radius:999px; background:#050712; height:7px; }
+    #bandwidthSlider::-moz-range-track { border-radius:999px; background:#050712; height:7px; }
 
     .slider-value-pill {
-      font-size: 0.75rem;
-      font-variant-numeric: tabular-nums;
-      padding: 10px 6px;
-      border-radius: 8px;
-      background: rgba(49, 225, 255, 0.08);
-      border: 1px solid rgba(49, 225, 255, 0.2);
-      color: var(--accent);
-      box-shadow: none;
-      width: 76px;
-      text-align: center;
-      flex-shrink: 0;
-      margin-top: 6px;
+      font-size:0.75rem; font-variant-numeric:tabular-nums;
+      padding:10px 6px; border-radius:8px;
+      background:rgba(49,225,255,0.08); border:1px solid rgba(49,225,255,0.2);
+      color:var(--accent); box-shadow:none; width:76px; text-align:center;
+      flex-shrink:0; margin-top:6px;
     }
 
     .map-shell {
-      margin-top: 20px;
-      width: 100%;
-      border-radius: 12px;
-      border: 1px solid var(--border-subtle);
-      background: rgba(5, 7, 18, 0.6);
-      overflow: hidden;
-      isolation: isolate;
-      transform: translateZ(0);
+      margin-top:20px; width:100%; border-radius:12px;
+      border:1px solid var(--border-subtle); background:rgba(5,7,18,0.6);
+      overflow:hidden; isolation:isolate; transform:translateZ(0);
     }
-
-    #regionMap {
-      width: 100%;
-      height: 430px;
-      display: block;
-    }
-
-    #regionMap .country {
-      fill: none;
-      stroke: #4a4e6a;
-      stroke-width: 1.0;
-      stroke-linejoin: round;
-      transition: fill 0.3s ease, stroke 0.3s ease;
-    }
-
-    #regionMap .country.highlighted {
-      fill: rgba(49, 225, 255, 0.15);
-      stroke: var(--accent);
-      stroke-width: 0.8;
-      filter: drop-shadow(0 0 4px rgba(49, 225, 255, 0.5));
-    }
-
-    #regionMap .country.hoverable {
-      cursor: pointer;
-    }
-
-    #regionMap .country.hoverable:hover {
-      fill: rgba(49, 225, 255, 0.08);
-      stroke: rgba(49, 225, 255, 0.5);
-    }
+    #regionMap { width:100%; height:430px; display:block; }
+    #regionMap .country { fill:none; stroke:#4a4e6a; stroke-width:1.0; stroke-linejoin:round; transition:fill 0.3s ease, stroke 0.3s ease; }
+    #regionMap .country.highlighted { fill:rgba(49,225,255,0.15); stroke:var(--accent); stroke-width:0.8; filter:drop-shadow(0 0 4px rgba(49,225,255,0.5)); }
+    #regionMap .country.hoverable { cursor:pointer; }
+    #regionMap .country.hoverable:hover { fill:rgba(49,225,255,0.08); stroke:rgba(49,225,255,0.5); }
 
     #map-tooltip {
-      position: absolute;
-      background: var(--card-bg);
-      border: 1px solid var(--border-subtle);
-      color: var(--text-subtle);
-      font-size: 0.7rem;
-      padding: 4px 8px;
-      border-radius: 6px;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.15s ease;
-      white-space: nowrap;
+      position:absolute; background:var(--card-bg); border:1px solid var(--border-subtle);
+      color:var(--text-subtle); font-size:0.7rem; padding:4px 8px; border-radius:6px;
+      pointer-events:none; opacity:0; transition:opacity 0.15s ease; white-space:nowrap;
     }
 
     .credit-line {
-      text-align: left;
-      margin-top: 14px;
-      font-size: 0.72rem;
-      color: rgba(255, 255, 255, 0.45);
-      letter-spacing: 0.06em;
-      pointer-events: none;
-      user-select: none;
+      text-align:left; margin-top:14px; font-size:0.72rem;
+      color:rgba(255,255,255,0.45); letter-spacing:0.06em;
+      pointer-events:none; user-select:none;
     }
   </style>
 </head>
@@ -587,7 +316,13 @@
       </div>
 
       <div class="plot-shell">
-        <div id="plot"></div>
+        <div id="plot">
+          <!-- SVG overlay for the tracking dot -->
+          <svg id="hover-overlay" width="100%" height="100%">
+            <circle id="hover-dot" r="5" fill="#31e1ff" stroke="#05060a" stroke-width="2"
+                    style="display:none; filter: drop-shadow(0 0 4px #31e1ff);"/>
+          </svg>
+        </div>
 
         <div class="slider-shell">
           <div class="slider-column">
@@ -603,10 +338,7 @@
     <div id="app-footer" style="display:none; margin-top: 20px;">
       <div style="max-width: 1120px;">
         <hr id="app-footer-hr" class="footer-line-animate" style="border:none; border-top: 1px solid rgba(255,255,255,0.375); margin: 0 0 18px 0;">
-        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;">
-          <b>Note</b>: Estimates generated using
-          Giraitis, L., Kapetanios, G. and Yates, T. (2014, 2018) and Giraitis, L., Kapetanios, G. and Marcellino, M. (2021).
-        </p>
+        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
       </div>
     </div>
   </div>
@@ -631,9 +363,7 @@
     function highlightCodes(codes) {
       if (!mapReady) return;
       d3.selectAll('#regionMap .country').classed('highlighted', false);
-      codes.forEach(c => {
-        d3.select(`#regionMap .country[data-iso="${c}"]`).classed('highlighted', true);
-      });
+      codes.forEach(c => d3.select(`#regionMap .country[data-iso="${c}"]`).classed('highlighted', true));
     }
 
     function onRegionChange(value) {
@@ -642,29 +372,23 @@
     }
 
     function onCountryChange(value) {
-      if (!value) {
-        highlightCodes(REGION_COUNTRIES[document.getElementById('regionSelector').value] || []);
-      } else {
-        highlightCodes([value]);
-      }
+      if (!value) highlightCodes(REGION_COUNTRIES[document.getElementById('regionSelector').value] || []);
+      else highlightCodes([value]);
     }
 
     window.addEventListener('DOMContentLoaded', () => {
       const svg = d3.select('#regionMap');
-      const width  = document.getElementById('regionMap').clientWidth || 760;
+      const width = document.getElementById('regionMap').clientWidth || 760;
       const height = 430;
       const tooltip = document.getElementById('map-tooltip');
 
-      const projection = d3.geoMercator()
-        .scale(1)
-        .translate([0, 0]);
+      const projection = d3.geoMercator().scale(1).translate([0, 0]);
       const path = d3.geoPath().projection(projection);
 
       fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
         .then(r => r.json())
         .then(world => {
           const countries = topojson.feature(world, world.objects.countries);
-
           const numericToAlpha3 = {
             "040":"AUT","056":"BEL","196":"CYP","233":"EST","246":"FIN",
             "250":"FRA","276":"DEU","300":"GRC","372":"IRL","380":"ITA",
@@ -690,8 +414,7 @@
                   return { ...d, geometry: { ...d.geometry, coordinates: polys } };
                 }
                 return d;
-              })
-              .filter(Boolean)
+              }).filter(Boolean)
           };
 
           projection.fitSize([width, height], filtered);
@@ -699,28 +422,19 @@
           const [tx, ty] = projection.translate();
           projection.translate([tx, ty]);
 
-          svg.attr('viewBox', `0 0 ${width} ${height}`)
-             .attr('width', width)
-             .attr('height', height);
-
+          svg.attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
           const g = svg.append('g');
 
           g.selectAll('.country')
-            .data(filtered.features)
-            .enter().append('path')
+            .data(filtered.features).enter().append('path')
             .attr('class', d => {
-              const id = String(d.id).padStart(3, '0');
-              const iso = numericToAlpha3[id] || '';
+              const iso = numericToAlpha3[String(d.id).padStart(3,'0')] || '';
               return 'country' + (iso ? ' hoverable' : '');
             })
             .attr('d', d => { try { return path(d); } catch(e) { return ''; } })
-            .attr('data-iso', d => {
-              const id = String(d.id).padStart(3, '0');
-              return numericToAlpha3[id] || '';
-            })
+            .attr('data-iso', d => numericToAlpha3[String(d.id).padStart(3,'0')] || '')
             .on('mouseenter', function(event, d) {
-              const id = String(d.id).padStart(3, '0');
-              const iso = numericToAlpha3[id];
+              const iso = numericToAlpha3[String(d.id).padStart(3,'0')];
               if (!iso) return;
               tooltip.textContent = ISO_NAMES[iso];
               tooltip.style.opacity = '1';
@@ -730,12 +444,9 @@
               tooltip.style.left = (event.clientX - box.left + 10) + 'px';
               tooltip.style.top  = (event.clientY - box.top  - 28) + 'px';
             })
-            .on('mouseleave', function() {
-              tooltip.style.opacity = '0';
-            })
+            .on('mouseleave', () => tooltip.style.opacity = '0')
             .on('click', function(event, d) {
-              const id = String(d.id).padStart(3, '0');
-              const iso = numericToAlpha3[id];
+              const iso = numericToAlpha3[String(d.id).padStart(3,'0')];
               if (!iso) return;
               document.getElementById('countrySelector').value = iso;
               highlightCodes([iso]);
@@ -743,8 +454,7 @@
 
           mapReady = true;
           highlightCodes(REGION_COUNTRIES['euro-area']);
-        })
-        .catch(() => {});
+        }).catch(() => {});
     });
 
     function syncSliderLength() {
@@ -752,9 +462,7 @@
       const slider  = document.getElementById('bandwidthSlider');
       if (!wrapper || !slider) return;
       const h = wrapper.clientHeight;
-      if (h > 0) {
-        slider.style.width = Math.round(h * 0.88) + 'px';
-      }
+      if (h > 0) slider.style.width = Math.round(h * 0.88) + 'px';
     }
 
     window.addEventListener('resize', syncSliderLength);
@@ -764,26 +472,25 @@
     let fullData  = [];
     let h1Values  = [];
     let coefBySpec = {};
+    // Store current plot data for the overlay to use
+    let currentDates = [];
+    let currentEsts  = [];
+    let plotLayout   = null;
 
     function goBack() {
       document.getElementById("app").classList.remove("active");
       document.getElementById("app-footer").style.display = "none";
+      hideDot();
       const lc = document.getElementById("landing-credit");
       lc.style.display = "block";
       const lcLine = document.getElementById("landing-line");
       const lcP    = document.getElementById("landing-text");
-      lcLine.classList.remove("footer-line-animate");
-      void lcLine.offsetWidth;
-      lcLine.classList.add("footer-line-animate");
-      lcP.classList.remove("footer-text-animate");
-      void lcP.offsetWidth;
-      lcP.classList.add("footer-text-animate");
+      lcLine.classList.remove("footer-line-animate"); void lcLine.offsetWidth; lcLine.classList.add("footer-line-animate");
+      lcP.classList.remove("footer-text-animate");    void lcP.offsetWidth;    lcP.classList.add("footer-text-animate");
       document.getElementById("landing").classList.add("active");
     }
 
-    function cleanValue(val) {
-      return (val || "").trim().replace(/^"|"$/g, "").replace(/\r/g, "");
-    }
+    function cleanValue(val) { return (val || "").trim().replace(/^"|"$/g, "").replace(/\r/g, ""); }
 
     function parseDate(val) {
       const s = cleanValue(val);
@@ -809,22 +516,14 @@
     }
 
     function prettyCoef(raw) {
-      const map = {
-        "(Intercept)": "Constant",
-        "dpi_lag1":    "Lagged inflation",
-        "dpi_lead1":   "Lead inflation",
-        "du":          "Unemployment"
-      };
+      const map = { "(Intercept)":"Constant","dpi_lag1":"Lagged inflation","dpi_lead1":"Lead inflation","du":"Unemployment" };
       if (map[raw]) return map[raw];
-      return raw
-        ? raw.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase())
-        : raw;
+      return raw ? raw.replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase()) : raw;
     }
 
     function prettyKernel(raw) {
       if (!raw) return raw;
-      const r = raw.toLowerCase();
-      return r.charAt(0).toUpperCase() + r.slice(1);
+      return raw.toLowerCase().charAt(0).toUpperCase() + raw.toLowerCase().slice(1);
     }
 
     function startApp() {
@@ -834,11 +533,12 @@
       document.getElementById("landing").classList.remove("active");
       document.getElementById("app").classList.add("active");
       document.getElementById("landing-credit").style.display = "none";
+
       const af = document.getElementById("app-footer");
       af.style.display = "block";
       const afHr = document.getElementById("app-footer-hr");
       const afP  = document.getElementById("app-footer-text");
-      [afHr, afP].forEach(el => { el.classList.remove("footer-line-animate", "footer-text-animate"); void el.offsetWidth; });
+      [afHr, afP].forEach(el => { el.classList.remove("footer-line-animate","footer-text-animate"); void el.offsetWidth; });
       afHr.classList.add("footer-line-animate");
       afP.classList.add("footer-text-animate");
 
@@ -882,8 +582,7 @@
         sel.innerHTML = "";
         values.forEach(v => {
           const o = document.createElement("option");
-          o.value = v;
-          o.textContent = fn ? fn(v) : v;
+          o.value = v; o.textContent = fn ? fn(v) : v;
           sel.appendChild(o);
         });
       }
@@ -949,11 +648,93 @@
     }
 
     function updateBandwidthLabel() {
-      document.getElementById("bandwidthLabel").textContent =
-        "h = " + getCurrentH1Numeric().toFixed(1);
+      document.getElementById("bandwidthLabel").textContent = "h = " + getCurrentH1Numeric().toFixed(1);
     }
 
-    /* === THIS is the only bit that’s really “new”: dot + label on the series === */
+    // ── Dot overlay helpers ──────────────────────────────────────────────────
+    const dot = document.getElementById("hover-dot");
+
+    function hideDot() { dot.style.display = "none"; }
+
+    function getPlotAxes() {
+      const gd = document.getElementById("plot");
+      if (!gd._fullLayout) return null;
+      return {
+        xaxis: gd._fullLayout.xaxis,
+        yaxis: gd._fullLayout.yaxis
+      };
+    }
+
+    // Given pixel x inside the plot area, find the interpolated y on the estimate line
+    function interpolateY(pxX) {
+      const axes = getPlotAxes();
+      if (!axes || !currentDates.length) return null;
+
+      // Convert pixel → data value for x
+      const xVal = axes.xaxis.p2d(pxX); // milliseconds timestamp
+
+      // currentDates are "YYYY-MM-DD" strings; convert to ms for bisecting
+      const timestamps = currentDates.map(d => new Date(d).getTime());
+
+      // Binary search for surrounding indices
+      let lo = 0, hi = timestamps.length - 1;
+      while (lo < hi - 1) {
+        const mid = (lo + hi) >> 1;
+        if (timestamps[mid] <= xVal) lo = mid; else hi = mid;
+      }
+
+      if (lo === hi) return { y: currentEsts[lo], idx: lo };
+
+      // Linear interpolation
+      const t0 = timestamps[lo], t1 = timestamps[hi];
+      const frac = (xVal - t0) / (t1 - t0);
+      const yInterp = currentEsts[lo] + frac * (currentEsts[hi] - currentEsts[lo]);
+      return { y: yInterp, idx: lo };
+    }
+
+    function setupOverlay() {
+      const plotDiv = document.getElementById("plot");
+      const overlay = document.getElementById("hover-overlay");
+
+      // The actual Plotly drawing area (inside margins) is in .plot (SVG group)
+      plotDiv.addEventListener("mousemove", function(e) {
+        if (!currentDates.length) return;
+        const axes = getPlotAxes();
+        if (!axes) return;
+
+        // Get cursor position relative to the plot div
+        const rect = plotDiv.getBoundingClientRect();
+        const pxX = e.clientX - rect.left;
+        const pxY = e.clientY - rect.top;
+
+        // Plotly's xaxis.l2p / p2d work in axis-local pixels (subtract the left margin)
+        const margin = plotDiv._fullLayout.margin;
+        const plotW  = rect.width  - margin.l - margin.r;
+        const plotH  = rect.height - margin.t - margin.b;
+
+        // Only show dot when cursor is inside the plot area
+        const localX = pxX - margin.l;
+        const localY = pxY - margin.t;
+        if (localX < 0 || localX > plotW || localY < 0 || localY > plotH) {
+          hideDot(); return;
+        }
+
+        const result = interpolateY(localX);
+        if (!result) { hideDot(); return; }
+
+        // Convert interpolated y back to pixel
+        const dotPxY = axes.yaxis.d2p(result.y);
+
+        // Position the dot (in overlay SVG coords = plot div coords)
+        dot.setAttribute("cx", margin.l + localX);
+        dot.setAttribute("cy", margin.t + dotPxY);
+        dot.style.display = "block";
+      });
+
+      plotDiv.addEventListener("mouseleave", hideDot);
+    }
+    // ────────────────────────────────────────────────────────────────────────
+
     function updatePlot() {
       if (!fullData.length) return;
 
@@ -970,103 +751,56 @@
         d.estimator === estRaw && d.coef === coefRaw
       );
 
+      hideDot();
+
       if (subset.length === 0) {
         Plotly.newPlot("plot", [], {
           paper_bgcolor: "#050712", plot_bgcolor: "#050712",
           xaxis: { visible: false }, yaxis: { visible: false }
         });
+        currentDates = []; currentEsts = [];
         return;
       }
 
-      const dates = subset.map(d => d.date);
-      const ests  = subset.map(d => parseFloat(d.estimate));
-      const lower = subset.map(d => parseFloat(d.lower));
-      const upper = subset.map(d => parseFloat(d.upper));
+      currentDates = subset.map(d => d.date);
+      currentEsts  = subset.map(d => parseFloat(d.estimate));
+      const lower  = subset.map(d => parseFloat(d.lower));
+      const upper  = subset.map(d => parseFloat(d.upper));
 
       Plotly.newPlot("plot", [
         {
-          x: [...dates, ...dates.slice().reverse()],
+          x: [...currentDates, ...currentDates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
           fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" }, name: "CI",
-          hoverinfo: "skip"
+          line: { color: "transparent" }, name: "CI"
         },
         {
-          x: dates, y: ests, mode: "lines", name: "",
-          line: { width: 2, color: "#31e1ff" },
-          hoverinfo: "skip"   // let x-axis spike/marker handle the date box
-        },
-        {
-          // dot + estimate label that follows the cursor
-          x: [], y: [], mode: "markers+text", name: "",
-          marker: {
-            size: 7,
-            color: "#31e1ff",
-            line: { color: "#05060a", width: 2 }
-          },
-          text: [],
-          textposition: "middle right",
-          textoffset: 10,   // push label a bit to the right of the dot
-          textfont: {
-            color: "#f5f5f7",
-            size: 11,
-            family: "system-ui, sans-serif"
-          },
-          cliponaxis: false,
-          hoverinfo: "skip"
+          x: currentDates, y: currentEsts, mode: "lines", name: "",
+          line: { width: 2, color: "#31e1ff" }
         }
       ], {
         showlegend: false,
         paper_bgcolor: "#050712", plot_bgcolor: "#050712",
         margin: { l: 60, r: 40, t: 40, b: 50 },
         xaxis: {
-          type: "date",
-          tickformat: "%Y",
-          hoverformat: "%b %Y",
-          tickangle: 0,
-          showgrid: false,
-          linecolor: "#3b3f55",
-          nticks: 7,
-          tickpadding: 10,
-          // this gives you the original: vertical spike + marker + date box on the axis
-          showspikes: true,
-          spikecolor: "#31e1ff",
-          spikethickness: 1,
-          spikedash: "solid",
-          spikemode: "toaxis+marker",
-          spikesnap: "data"
+          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
+          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
         },
         yaxis: {
-          zeroline: true,
-          zerolinecolor: "#303548",
-          showgrid: false,
-          linecolor: "#3b3f55",
-          tickformat: ".2f"
+          zeroline: true, zerolinecolor: "#303548",
+          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
         }
-      }, { responsive: true });
-
-      const plotEl = document.getElementById("plot");
-
-      plotEl.on("plotly_hover", function(data) {
-        const pt = data.points.find(p => p.curveNumber === 1);
-        if (!pt) return;
-        const val = pt.y.toFixed(2);  // only the estimate in the small box
-
-        Plotly.restyle("plot", {
-          x: [[pt.x]],
-          y: [[pt.y]],
-          text: [[val]]
-        }, [2]); // update the markers+text trace
-      });
-
-      plotEl.on("plotly_unhover", function() {
-        Plotly.restyle("plot", {
-          x: [[]],
-          y: [[]],
-          text: [[]]
-        }, [2]);
+      }, { responsive: true }).then(() => {
+        // Resize the overlay SVG to match the plot div
+        const plotDiv = document.getElementById("plot");
+        const overlay = document.getElementById("hover-overlay");
+        overlay.setAttribute("width",  plotDiv.offsetWidth);
+        overlay.setAttribute("height", plotDiv.offsetHeight);
       });
     }
+
+    // Set up the overlay once on load
+    window.addEventListener("DOMContentLoaded", setupOverlay);
   </script>
 </body>
 </html>
