@@ -534,6 +534,13 @@
       user-select: none;
     }
 
+    /* NEW: round Plotly hover boxes slightly */
+    #plot .hoverlayer .bg {
+      rx: 6;
+      ry: 6;
+      shape-rendering: auto;
+    }
+
   </style>
 </head>
 
@@ -1116,8 +1123,8 @@
             opacity: [1]
           }, [2]);
 
-          // Round hover boxes on each hover
-          const rects = gd.querySelectorAll('.hoverlayer .hoverlabel rect');
+          // Fallback: ensure hover box bg has rounded corners
+          const rects = gd.querySelectorAll('.hoverlayer .bg');
           rects.forEach(r => {
             r.setAttribute('rx', 6);
             r.setAttribute('ry', 6);
