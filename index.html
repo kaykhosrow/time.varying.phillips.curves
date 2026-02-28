@@ -541,6 +541,12 @@
       display: inline-block;
     }
 
+    /* Nudge ONLY the axis hover label down a bit so the arrow
+       doesn't sit exactly on the x-axis line */
+    #plot .hoverlayer .axistext {
+      transform: translateY(3px);
+    }
+
   </style>
 </head>
 
@@ -1137,43 +1143,11 @@
           const pt = ev.points.find(p => p.curveNumber === 1);
           if (!pt) return;
 
-          // Update hover dot on the series
           Plotly.restyle(gd, {
             x: [[pt.x]],
             y: [[pt.y]],
             opacity: [1]
           }, [2]);
-
-          // Nudge ONLY the x-axis hover label down a bit
-          const axisTexts = plotDiv.querySelectorAll('.hoverlayer .axistext');
-          axisTexts.forEach(el => {
-            const tr = el.getAttribute('transform');
-            if (!tr) return;
-            const m = tr.match(/translate\(([-0-9.]+),\s*([-0-9.]+)\)/);
-            if (!m) return;
-
-            const x = parseFloat(m[1]);
-            const y = parseFloat(m[2]);
-            if (isNaN(x) || isNaN(y)) return;
-
-            const offset = 3; // pixels down
-
-            // Use data-ybase so we don't keep stacking offsets
-            let yBase = parseFloat(el.getAttribute('data-ybase'));
-            if (isNaN(yBase)) {
-              // First time we see this element: treat current y as base
-              yBase = y;
-            } else {
-              // If Plotly has moved it (new hover point), reset base
-              if (Math.abs(y - (yBase + offset)) > 0.1) {
-                yBase = y;
-              }
-            }
-
-            el.setAttribute('data-ybase', yBase.toString());
-            const yNew = yBase + offset;
-            el.setAttribute('transform', `translate(${x},${yNew})`);
-          });
         });
 
         // Dot stays at last hovered position; no unhover listener.
