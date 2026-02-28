@@ -420,6 +420,8 @@
       cursor: pointer;
       position: absolute;
       flex-shrink: 0;
+      opacity: 0;                /* start invisible */
+      transition: opacity 0.2s ease;
     }
 
     #bandwidthSlider::-webkit-slider-thumb {
@@ -971,7 +973,7 @@
       slider.max   = Math.max(h1Values.length - 1, 0);
       slider.step  = 1;
 
-      // NEW: default to h = 0.5 if available, otherwise middle value
+      // Default to h = 0.5 if available, otherwise middle value
       let defaultIdx = h1Values.findIndex(v => Math.abs(v - 0.5) < 1e-8);
       if (defaultIdx === -1) {
         defaultIdx = Math.floor(h1Values.length / 2);
@@ -979,6 +981,9 @@
       slider.value = defaultIdx;
 
       updateBandwidthLabel();
+
+      // Now show the slider, so the thumb only appears in the correct place
+      slider.style.opacity = 1;
 
       fillSelect("kernel",    kerSet,  prettyKernel);
       fillSelect("pcType",    pcSet,   prettyPcType);
