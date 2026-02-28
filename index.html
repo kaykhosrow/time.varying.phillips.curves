@@ -21,7 +21,6 @@
     }
 
     * { box-sizing: border-box; }
-
     html, body { overflow: hidden; height: 100%; }
 
     body {
@@ -29,26 +28,22 @@
       background: radial-gradient(circle at top, #15192b 0, #05060a 55%);
       color: var(--text-main);
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-      font-size: 16px;
-      -webkit-text-size-adjust: none; text-size-adjust: none;
-      display: flex; justify-content: center; align-items: center;
-      min-width: 1000px;
+      font-size: 16px; -webkit-text-size-adjust: none; text-size-adjust: none;
+      display: flex; justify-content: center; align-items: center; min-width: 1000px;
     }
 
     body::before { content: ''; position: fixed; inset: 0; z-index: 0; }
 
     .main-shell {
-      width: min(1120px, 100% - 40px);
-      margin: 40px auto; flex-shrink: 0;
-      transform: scale(1.05); transform-origin: center center;
-      position: relative; z-index: 1;
+      width: min(1120px, 100% - 40px); margin: 40px auto; flex-shrink: 0;
+      transform: scale(1.05); transform-origin: center center; position: relative; z-index: 1;
     }
 
     .card {
       background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
       border-radius: 16px; border: 1px solid var(--border-subtle);
-      box-shadow: 0 18px 40px rgba(0,0,0,0.6);
-      padding: 24px 28px; backdrop-filter: blur(14px); cursor: default;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.6); padding: 24px 28px;
+      backdrop-filter: blur(14px); cursor: default;
     }
 
     #landing {
@@ -61,14 +56,13 @@
 
     h1, h2 { margin: 0; font-weight: 600; letter-spacing: 0.02em; }
     h1 { font-size: 1.8rem; } h2 { font-size: 1.5rem; }
-
     p { margin: 8px 0; color: var(--text-subtle); line-height: 1.5; }
 
     .pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 4px 12px; border-radius: 999px;
-      background: rgba(49,225,255,0.09); border: 1px solid rgba(49,225,255,0.18);
-      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);
+      display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px;
+      border-radius: 999px; background: rgba(49,225,255,0.09);
+      border: 1px solid rgba(49,225,255,0.18); font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);
     }
 
     .pill-dot {
@@ -77,11 +71,9 @@
     }
 
     .controls-row { display: flex; flex-wrap: wrap; gap: 16px 18px; margin-top: 24px; align-items: flex-end; }
-
     .app-controls-row { margin-top: 32px; flex-wrap: nowrap; justify-content: space-between; }
     .app-controls-row .control-group { flex: 1 1 0; }
     .app-controls-row .control-group select { width: 100%; }
-
     .control-group { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
     .control-label { font-size: 0.8rem; color: var(--text-subtle); margin-left: 5px; }
     .control-group select { width: 220px; }
@@ -113,9 +105,8 @@
       background: radial-gradient(circle at 0 0, rgba(49,225,255,0.28), transparent 55%),
                   linear-gradient(135deg, #0d90b8, #31e1ff);
       border: none; color: #05060a; font-weight: 600;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      height: auto; padding: 8px 32px; border-radius: 10px;
-      will-change: transform; isolation: isolate;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3); height: auto; padding: 8px 32px;
+      border-radius: 10px; will-change: transform; isolation: isolate;
     }
     .primary-btn:hover {
       box-shadow: 0 12px 28px rgba(0,0,0,0.75); transform: translateY(-1px); border: none;
@@ -130,9 +121,9 @@
 
     .pill-button {
       display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 4px 10px; border-radius: 999px;
-      background: rgba(49,225,255,0.09); border: 1px solid rgba(49,225,255,0.18);
-      font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);
+      padding: 4px 10px; border-radius: 999px; background: rgba(49,225,255,0.09);
+      border: 1px solid rgba(49,225,255,0.18); font-size: 0.75rem;
+      text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent);
       height: auto; box-shadow: none; width: 80px;
     }
     .pill-button:hover {
@@ -152,21 +143,18 @@
 
     .app-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:4px; gap:12px; }
     .app-header-right { display:flex; flex-direction:row; align-items:center; gap:10px; }
-
     .plot-shell { margin-top:18px; display:flex; gap:18px; align-items:stretch; }
 
     #plot {
       flex: 1 1 auto; min-height: 520px; border-radius: 14px;
       background: #050712; padding: 6px 18px 6px 6px; overflow: hidden;
-      position: relative; /* needed for overlay */
+      position: relative;
     }
 
-    /* The SVG overlay that sits on top of the Plotly canvas */
+    /* The SVG overlay sits on top, pointer-events none so Plotly still works */
     #hover-overlay {
-      position: absolute;
-      top: 0; left: 0;
-      pointer-events: none;
-      overflow: visible;
+      position: absolute; top: 0; left: 0;
+      pointer-events: none; overflow: visible;
     }
 
     .slider-shell { width:110px; display:flex; flex-direction:column; align-items:center; }
@@ -176,10 +164,7 @@
       border:1px solid var(--border-subtle); padding:12px 4px 12px;
       display:flex; flex-direction:column; align-items:center; gap:8px;
     }
-    .slider-wrapper {
-      width:100%; flex:1 1 auto; display:flex; align-items:center;
-      justify-content:center; min-height:0; position:relative;
-    }
+    .slider-wrapper { width:100%; flex:1 1 auto; display:flex; align-items:center; justify-content:center; min-height:0; position:relative; }
 
     #bandwidthSlider {
       -webkit-appearance:none; appearance:none; width:200px; height:18px;
@@ -196,11 +181,9 @@
     #bandwidthSlider::-moz-range-track { border-radius:999px; background:#050712; height:7px; }
 
     .slider-value-pill {
-      font-size:0.75rem; font-variant-numeric:tabular-nums;
-      padding:10px 6px; border-radius:8px;
+      font-size:0.75rem; font-variant-numeric:tabular-nums; padding:10px 6px; border-radius:8px;
       background:rgba(49,225,255,0.08); border:1px solid rgba(49,225,255,0.2);
-      color:var(--accent); box-shadow:none; width:76px; text-align:center;
-      flex-shrink:0; margin-top:6px;
+      color:var(--accent); box-shadow:none; width:76px; text-align:center; flex-shrink:0; margin-top:6px;
     }
 
     .map-shell {
@@ -222,14 +205,14 @@
 
     .credit-line {
       text-align:left; margin-top:14px; font-size:0.72rem;
-      color:rgba(255,255,255,0.45); letter-spacing:0.06em;
-      pointer-events:none; user-select:none;
+      color:rgba(255,255,255,0.45); letter-spacing:0.06em; pointer-events:none; user-select:none;
     }
   </style>
 </head>
 
 <body onclick="handleBgClick(event)">
   <div class="main-shell">
+
     <!-- LANDING VIEW -->
     <div id="landing" class="card active">
       <h1>Time-Varying Phillips Curves</h1>
@@ -317,13 +300,9 @@
 
       <div class="plot-shell">
         <div id="plot">
-          <!-- SVG overlay for the tracking dot -->
-          <svg id="hover-overlay" width="100%" height="100%">
+          <svg id="hover-overlay">
             <circle id="hover-dot" r="5" fill="#31e1ff" stroke="#05060a" stroke-width="2"
-                    style="display:none; filter: drop-shadow(0 0 4px #31e1ff);"/>
-            <text id="hover-label" fill="#f5f5f7" font-size="12"
-                  font-family="system-ui, -apple-system, sans-serif"
-                  style="display:none; pointer-events:none;"></text>
+                    style="display:none; filter:drop-shadow(0 0 5px #31e1ff);"/>
           </svg>
         </div>
 
@@ -344,6 +323,7 @@
         <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
       </div>
     </div>
+
   </div>
 
   <script>
@@ -380,19 +360,19 @@
     }
 
     window.addEventListener('DOMContentLoaded', () => {
-      const svg = d3.select('#regionMap');
-      const width = document.getElementById('regionMap').clientWidth || 760;
-      const height = 430;
+      const svg     = d3.select('#regionMap');
+      const width   = document.getElementById('regionMap').clientWidth || 760;
+      const height  = 430;
       const tooltip = document.getElementById('map-tooltip');
 
-      const projection = d3.geoMercator().scale(1).translate([0, 0]);
+      const projection = d3.geoMercator().scale(1).translate([0,0]);
       const path = d3.geoPath().projection(projection);
 
       fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
         .then(r => r.json())
         .then(world => {
           const countries = topojson.feature(world, world.objects.countries);
-          const numericToAlpha3 = {
+          const n2a = {
             "040":"AUT","056":"BEL","196":"CYP","233":"EST","246":"FIN",
             "250":"FRA","276":"DEU","300":"GRC","372":"IRL","380":"ITA",
             "428":"LVA","440":"LTU","442":"LUX","470":"MLT","528":"NLD",
@@ -401,55 +381,47 @@
 
           const filtered = {
             type: 'FeatureCollection',
-            features: countries.features
-              .filter(d => String(d.id) !== '10')
-              .map(d => {
-                if (d.geometry && d.geometry.type === 'MultiPolygon') {
-                  const polys = d.geometry.coordinates.filter(poly => {
-                    const ring = poly[0];
-                    const avgLon = ring.reduce((s,p) => s+p[0], 0) / ring.length;
-                    const avgLat = ring.reduce((s,p) => s+p[1], 0) / ring.length;
-                    const iso = numericToAlpha3[String(d.id).padStart(3,'0')];
-                    if (iso === 'FRA') return avgLon > -10 && avgLat > 40;
-                    return avgLon > -170 && avgLat > -58 && avgLat < 84;
-                  });
-                  if (!polys.length) return null;
-                  return { ...d, geometry: { ...d.geometry, coordinates: polys } };
-                }
-                return d;
-              }).filter(Boolean)
+            features: countries.features.filter(d => String(d.id) !== '10').map(d => {
+              if (d.geometry && d.geometry.type === 'MultiPolygon') {
+                const polys = d.geometry.coordinates.filter(poly => {
+                  const ring = poly[0];
+                  const avgLon = ring.reduce((s,p) => s+p[0],0)/ring.length;
+                  const avgLat = ring.reduce((s,p) => s+p[1],0)/ring.length;
+                  const iso = n2a[String(d.id).padStart(3,'0')];
+                  if (iso === 'FRA') return avgLon > -10 && avgLat > 40;
+                  return avgLon > -170 && avgLat > -58 && avgLat < 84;
+                });
+                if (!polys.length) return null;
+                return { ...d, geometry: { ...d.geometry, coordinates: polys } };
+              }
+              return d;
+            }).filter(Boolean)
           };
 
           projection.fitSize([width, height], filtered);
           projection.scale(projection.scale() * 1.3);
-          const [tx, ty] = projection.translate();
-          projection.translate([tx, ty]);
+          projection.translate(projection.translate());
 
-          svg.attr('viewBox', `0 0 ${width} ${height}`).attr('width', width).attr('height', height);
+          svg.attr('viewBox',`0 0 ${width} ${height}`).attr('width',width).attr('height',height);
           const g = svg.append('g');
 
-          g.selectAll('.country')
-            .data(filtered.features).enter().append('path')
-            .attr('class', d => {
-              const iso = numericToAlpha3[String(d.id).padStart(3,'0')] || '';
-              return 'country' + (iso ? ' hoverable' : '');
-            })
+          g.selectAll('.country').data(filtered.features).enter().append('path')
+            .attr('class', d => { const iso = n2a[String(d.id).padStart(3,'0')]||''; return 'country'+(iso?' hoverable':''); })
             .attr('d', d => { try { return path(d); } catch(e) { return ''; } })
-            .attr('data-iso', d => numericToAlpha3[String(d.id).padStart(3,'0')] || '')
-            .on('mouseenter', function(event, d) {
-              const iso = numericToAlpha3[String(d.id).padStart(3,'0')];
+            .attr('data-iso', d => n2a[String(d.id).padStart(3,'0')]||'')
+            .on('mouseenter', function(event,d) {
+              const iso = n2a[String(d.id).padStart(3,'0')];
               if (!iso) return;
-              tooltip.textContent = ISO_NAMES[iso];
-              tooltip.style.opacity = '1';
+              tooltip.textContent = ISO_NAMES[iso]; tooltip.style.opacity='1';
             })
             .on('mousemove', function(event) {
               const box = document.querySelector('.map-shell').getBoundingClientRect();
-              tooltip.style.left = (event.clientX - box.left + 10) + 'px';
-              tooltip.style.top  = (event.clientY - box.top  - 28) + 'px';
+              tooltip.style.left=(event.clientX-box.left+10)+'px';
+              tooltip.style.top=(event.clientY-box.top-28)+'px';
             })
-            .on('mouseleave', () => tooltip.style.opacity = '0')
-            .on('click', function(event, d) {
-              const iso = numericToAlpha3[String(d.id).padStart(3,'0')];
+            .on('mouseleave', () => tooltip.style.opacity='0')
+            .on('click', function(event,d) {
+              const iso = n2a[String(d.id).padStart(3,'0')];
               if (!iso) return;
               document.getElementById('countrySelector').value = iso;
               highlightCodes([iso]);
@@ -457,28 +429,22 @@
 
           mapReady = true;
           highlightCodes(REGION_COUNTRIES['euro-area']);
-        }).catch(() => {});
+        }).catch(()=>{});
     });
 
     function syncSliderLength() {
       const wrapper = document.querySelector('.slider-wrapper');
       const slider  = document.getElementById('bandwidthSlider');
-      if (!wrapper || !slider) return;
+      if (!wrapper||!slider) return;
       const h = wrapper.clientHeight;
-      if (h > 0) slider.style.width = Math.round(h * 0.88) + 'px';
+      if (h>0) slider.style.width = Math.round(h*0.88)+'px';
     }
-
     window.addEventListener('resize', syncSliderLength);
 
     const REGION_FILES = { "euro-area": "data/euro_area_tvpc_full.csv" };
 
-    let fullData  = [];
-    let h1Values  = [];
-    let coefBySpec = {};
-    // Store current plot data for the overlay to use
-    let currentDates = [];
-    let currentEsts  = [];
-    let plotLayout   = null;
+    let fullData=[], h1Values=[], coefBySpec={};
+    let currentDates=[], currentEsts=[];
 
     function goBack() {
       document.getElementById("app").classList.remove("active");
@@ -493,7 +459,7 @@
       document.getElementById("landing").classList.add("active");
     }
 
-    function cleanValue(val) { return (val || "").trim().replace(/^"|"$/g, "").replace(/\r/g, ""); }
+    function cleanValue(val) { return (val||"").trim().replace(/^"|"$/g,"").replace(/\r/g,""); }
 
     function parseDate(val) {
       const s = cleanValue(val);
@@ -505,64 +471,60 @@
     function prettyPcType(raw) {
       if (!raw) return raw;
       const r = raw.toLowerCase();
-      if (r === "standard") return "Standard Phillips Curve";
-      if (r === "nk")       return "New Keynesian Phillips Curve";
-      return raw.charAt(0).toUpperCase() + raw.slice(1);
+      if (r==="standard") return "Standard Phillips Curve";
+      if (r==="nk")       return "New Keynesian Phillips Curve";
+      return raw.charAt(0).toUpperCase()+raw.slice(1);
     }
 
     function prettyEstimator(raw) {
       if (!raw) return raw;
       const r = raw.toLowerCase();
-      if (r === "ols") return "TV-OLS";
-      if (r === "iv")  return "TV-IV";
+      if (r==="ols") return "TV-OLS";
+      if (r==="iv")  return "TV-IV";
       return raw.toUpperCase();
     }
 
     function prettyCoef(raw) {
-      const map = { "(Intercept)":"Constant","dpi_lag1":"Lagged inflation","dpi_lead1":"Lead inflation","du":"Unemployment" };
+      const map = {"(Intercept)":"Constant","dpi_lag1":"Lagged inflation","dpi_lead1":"Lead inflation","du":"Unemployment"};
       if (map[raw]) return map[raw];
-      return raw ? raw.replace(/_/g," ").replace(/\b\w/g, c => c.toUpperCase()) : raw;
+      return raw ? raw.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase()) : raw;
     }
 
     function prettyKernel(raw) {
       if (!raw) return raw;
-      return raw.toLowerCase().charAt(0).toUpperCase() + raw.toLowerCase().slice(1);
+      return raw.toLowerCase().charAt(0).toUpperCase()+raw.toLowerCase().slice(1);
     }
 
     function startApp() {
       const region = document.getElementById("regionSelector").value;
       const file   = REGION_FILES[region];
-
       document.getElementById("landing").classList.remove("active");
       document.getElementById("app").classList.add("active");
       document.getElementById("landing-credit").style.display = "none";
-
       const af = document.getElementById("app-footer");
       af.style.display = "block";
       const afHr = document.getElementById("app-footer-hr");
       const afP  = document.getElementById("app-footer-text");
-      [afHr, afP].forEach(el => { el.classList.remove("footer-line-animate","footer-text-animate"); void el.offsetWidth; });
+      [afHr,afP].forEach(el=>{ el.classList.remove("footer-line-animate","footer-text-animate"); void el.offsetWidth; });
       afHr.classList.add("footer-line-animate");
       afP.classList.add("footer-text-animate");
-
-      requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
-
+      requestAnimationFrame(()=>requestAnimationFrame(syncSliderLength));
       fetch(file)
-        .then(r => { if (!r.ok) throw new Error("HTTP " + r.status); return r.text(); })
-        .then(text => {
+        .then(r=>{ if(!r.ok) throw new Error("HTTP "+r.status); return r.text(); })
+        .then(text=>{
           fullData = parseCSV(text);
-          if (fullData.length === 0) { alert("No data rows found."); return; }
+          if(fullData.length===0){ alert("No data rows found."); return; }
           setupControls(fullData);
           updatePlot();
-          requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
+          requestAnimationFrame(()=>requestAnimationFrame(syncSliderLength));
         })
-        .catch(err => alert("Error loading data: " + err.message));
+        .catch(err=>alert("Error loading data: "+err.message));
     }
 
     function parseCSV(text) {
       const lines = text.trim().split(/\r?\n/);
-      if (lines.length < 2) return [];
-      return lines.slice(1).map(line => {
+      if (lines.length<2) return [];
+      return lines.slice(1).map(line=>{
         if (!line.trim()) return null;
         const c = line.split(",");
         return {
@@ -576,48 +538,33 @@
           lower:     cleanValue(c[7]),
           upper:     cleanValue(c[8])
         };
-      }).filter(r => r && r.date !== "" && r.estimate !== "");
+      }).filter(r=>r&&r.date!==""&&r.estimate!=="");
     }
 
     function setupControls(data) {
       function fillSelect(id, values, fn) {
         const sel = document.getElementById(id);
         sel.innerHTML = "";
-        values.forEach(v => {
-          const o = document.createElement("option");
-          o.value = v; o.textContent = fn ? fn(v) : v;
-          sel.appendChild(o);
-        });
+        values.forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=fn?fn(v):v; sel.appendChild(o); });
       }
-
-      const bwSet  = [...new Set(data.map(d => d.h1))].filter(v => v !== "" && v !== undefined && v !== null);
-      const kerSet = [...new Set(data.map(d => d.kernel))].filter(v => v !== "" && v !== undefined && v !== null);
-      const pcSet  = [...new Set(data.map(d => d.pc_type))].filter(v => v !== "" && v !== undefined && v !== null);
-      const estSet = [...new Set(data.map(d => d.estimator))].filter(v => v !== "" && v !== undefined && v !== null);
-
+      const bwSet  = [...new Set(data.map(d=>d.h1))].filter(v=>v!==""&&v!==undefined&&v!==null);
+      const kerSet = [...new Set(data.map(d=>d.kernel))].filter(v=>v!==""&&v!==undefined&&v!==null);
+      const pcSet  = [...new Set(data.map(d=>d.pc_type))].filter(v=>v!==""&&v!==undefined&&v!==null);
+      const estSet = [...new Set(data.map(d=>d.estimator))].filter(v=>v!==""&&v!==undefined&&v!==null);
       coefBySpec = {};
-      data.forEach(d => {
-        if (!coefBySpec[d.pc_type]) coefBySpec[d.pc_type] = new Set();
-        coefBySpec[d.pc_type].add(d.coef);
-      });
-
-      h1Values = bwSet.map(x => parseFloat(x)).filter(x => !isNaN(x)).sort((a,b) => a-b);
-
+      data.forEach(d=>{ if(!coefBySpec[d.pc_type]) coefBySpec[d.pc_type]=new Set(); coefBySpec[d.pc_type].add(d.coef); });
+      h1Values = bwSet.map(x=>parseFloat(x)).filter(x=>!isNaN(x)).sort((a,b)=>a-b);
       const slider = document.getElementById("bandwidthSlider");
-      slider.min   = 0;
-      slider.max   = Math.max(h1Values.length - 1, 0);
-      slider.step  = 1;
-      slider.value = Math.floor(h1Values.length / 2);
+      slider.min=0; slider.max=Math.max(h1Values.length-1,0); slider.step=1;
+      slider.value=Math.floor(h1Values.length/2);
       updateBandwidthLabel();
-
       fillSelect("kernel",    kerSet,  prettyKernel);
       fillSelect("pcType",    pcSet,   prettyPcType);
       fillSelect("estimator", estSet,  prettyEstimator);
       updateCoefOptions();
-
-      slider.oninput = () => { updateBandwidthLabel(); updatePlot(); };
+      slider.oninput = ()=>{ updateBandwidthLabel(); updatePlot(); };
       document.getElementById("kernel").onchange    = updatePlot;
-      document.getElementById("pcType").onchange    = () => { updateCoefOptions(); updatePlot(); };
+      document.getElementById("pcType").onchange    = ()=>{ updateCoefOptions(); updatePlot(); };
       document.getElementById("estimator").onchange = updatePlot;
       document.getElementById("coef").onchange      = updatePlot;
     }
@@ -627,62 +574,95 @@
       const coefs = coefBySpec[pcRaw] ? [...coefBySpec[pcRaw]] : [];
       const sel   = document.getElementById("coef");
       sel.innerHTML = "";
-
-      const order = ["(Intercept)", "dpi_lag1", "dpi_lead1", "du"];
-      const ordered = [
-        ...order.filter(k => coefs.includes(k)),
-        ...coefs.filter(c => !order.includes(c))
-      ];
-
-      ordered.forEach(v => {
-        const o = document.createElement("option");
-        o.value = v; o.textContent = prettyCoef(v);
-        sel.appendChild(o);
-      });
-
-      const hasDu = coefs.includes("du");
-      sel.value = hasDu ? "du" : (ordered[0] || "");
+      const order   = ["(Intercept)","dpi_lag1","dpi_lead1","du"];
+      const ordered = [...order.filter(k=>coefs.includes(k)), ...coefs.filter(c=>!order.includes(c))];
+      ordered.forEach(v=>{ const o=document.createElement("option"); o.value=v; o.textContent=prettyCoef(v); sel.appendChild(o); });
+      sel.value = coefs.includes("du") ? "du" : (ordered[0]||"");
     }
 
     function getCurrentH1Numeric() {
       const slider = document.getElementById("bandwidthSlider");
-      const idx = Math.min(Math.max(parseInt(slider.value, 10) || 0, 0), h1Values.length - 1);
+      const idx = Math.min(Math.max(parseInt(slider.value,10)||0,0),h1Values.length-1);
       return h1Values[idx];
     }
 
     function updateBandwidthLabel() {
-      document.getElementById("bandwidthLabel").textContent = "h = " + getCurrentH1Numeric().toFixed(1);
+      document.getElementById("bandwidthLabel").textContent = "h = "+getCurrentH1Numeric().toFixed(1);
     }
 
-    // ── Dot overlay helpers ──────────────────────────────────────────────────
-    const dot        = document.getElementById("hover-dot");
-    const hoverLabel = document.getElementById("hover-label");
+    // ── hover dot ──────────────────────────────────────────────────────────
+    const dot = document.getElementById("hover-dot");
+    function hideDot() { dot.style.display = "none"; }
 
-    function hideDot() {
-      dot.style.display        = "none";
-      hoverLabel.style.display = "none";
+    function updatePlot() {
+      if (!fullData.length) return;
+
+      const hNum      = getCurrentH1Numeric();
+      const kernelRaw = document.getElementById("kernel").value;
+      const pcRaw     = document.getElementById("pcType").value;
+      const estRaw    = document.getElementById("estimator").value;
+      const coefRaw   = document.getElementById("coef").value;
+      const tol = 1e-8;
+
+      const subset = fullData.filter(d =>
+        Math.abs(parseFloat(d.h1)-hNum)<tol &&
+        d.kernel===kernelRaw && d.pc_type===pcRaw &&
+        d.estimator===estRaw && d.coef===coefRaw
+      );
+
+      hideDot();
+
+      if (subset.length===0) {
+        Plotly.newPlot("plot",[],{paper_bgcolor:"#050712",plot_bgcolor:"#050712",xaxis:{visible:false},yaxis:{visible:false}});
+        currentDates=[]; currentEsts=[]; return;
+      }
+
+      currentDates = subset.map(d=>d.date);
+      currentEsts  = subset.map(d=>parseFloat(d.estimate));
+      const lower  = subset.map(d=>parseFloat(d.lower));
+      const upper  = subset.map(d=>parseFloat(d.upper));
+
+      Plotly.newPlot("plot", [
+        {
+          x: [...currentDates,...currentDates.slice().reverse()],
+          y: [...upper,...lower.slice().reverse()],
+          fill:"toself", fillcolor:"rgba(49,225,255,0.12)",
+          line:{color:"transparent"}, name:"CI"
+        },
+        {
+          x: currentDates, y: currentEsts, mode:"lines", name:"",
+          line:{width:2,color:"#31e1ff"}
+        }
+      ], {
+        showlegend: false,
+        paper_bgcolor:"#050712", plot_bgcolor:"#050712",
+        margin:{l:60,r:40,t:40,b:50},
+        xaxis:{ type:"date",tickformat:"%Y",hoverformat:"%b %Y",tickangle:0,showgrid:false,linecolor:"#3b3f55",nticks:7 },
+        yaxis:{ zeroline:true,zerolinecolor:"#303548",showgrid:false,linecolor:"#3b3f55",tickformat:".2f" }
+      }, {responsive:true}).then(()=>{
+        // Resize overlay to match plot div
+        const plotDiv = document.getElementById("plot");
+        const overlay = document.getElementById("hover-overlay");
+        overlay.setAttribute("width",  plotDiv.offsetWidth);
+        overlay.setAttribute("height", plotDiv.offsetHeight);
+        attachMouseHandler();
+      });
     }
 
-    function plotlyDateToMs(val) {
-      if (typeof val === "number") return val;
-      return new Date(val).getTime();
-    }
-
-    function getPlotAxes() {
-      const gd = document.getElementById("plot");
-      if (!gd._fullLayout) return null;
-      return {
-        xaxis: gd._fullLayout.xaxis,
-        yaxis: gd._fullLayout.yaxis
-      };
-    }
-
-    function setupOverlay() {
+    function attachMouseHandler() {
       const plotDiv = document.getElementById("plot");
+      // Remove previous listener by cloning
+      const newDiv = plotDiv.cloneNode(false);
+      // Can't clone Plotly div — instead use a flag
+      plotDiv._overlayAttached = false;
 
-      plotDiv.addEventListener("mousemove", function(e) {
-        if (!currentDates.length) return;
-        if (!plotDiv._fullLayout) return;
+      if (plotDiv._overlayHandler) {
+        plotDiv.removeEventListener("mousemove", plotDiv._overlayHandler);
+        plotDiv.removeEventListener("mouseleave", plotDiv._overlayLeave);
+      }
+
+      plotDiv._overlayHandler = function(e) {
+        if (!currentDates.length || !plotDiv._fullLayout) return;
 
         const rect   = plotDiv.getBoundingClientRect();
         const margin = plotDiv._fullLayout.margin;
@@ -698,123 +678,36 @@
           hideDot(); return;
         }
 
-        // pixel → x milliseconds
-        const xMin = plotlyDateToMs(xaxis.range[0]);
-        const xMax = plotlyDateToMs(xaxis.range[1]);
+        // pixel x → timestamp
+        const xMin = new Date(xaxis.range[0]).getTime();
+        const xMax = new Date(xaxis.range[1]).getTime();
         const xVal = xMin + (localX / plotW) * (xMax - xMin);
 
-        // bisect
+        // Find the nearest data point (not interpolated — snap to actual data)
         const ts = currentDates.map(d => new Date(d).getTime());
-        let lo = 0, hi = ts.length - 1;
-        while (lo < hi - 1) {
-          const mid = (lo + hi) >> 1;
-          ts[mid] <= xVal ? lo = mid : hi = mid;
+        let nearest = 0;
+        let minDist = Infinity;
+        for (let i = 0; i < ts.length; i++) {
+          const dist = Math.abs(ts[i] - xVal);
+          if (dist < minDist) { minDist = dist; nearest = i; }
         }
 
-        // interpolate y
-        let yVal;
-        if (lo === hi) {
-          yVal = currentEsts[lo];
-        } else {
-          const frac = (xVal - ts[lo]) / (ts[hi] - ts[lo]);
-          yVal = currentEsts[lo] + frac * (currentEsts[hi] - currentEsts[lo]);
-        }
+        // Get the actual pixel position of that data point from Plotly's axes
+        const xPx = (ts[nearest] - xMin) / (xMax - xMin) * plotW;
+        const yMin = yaxis.range[0];
+        const yMax = yaxis.range[1];
+        const yPx  = plotH * (1 - (currentEsts[nearest] - yMin) / (yMax - yMin));
 
-        // y data → pixel (range[0] is bottom, screen is inverted)
-        const yMin  = yaxis.range[0];
-        const yMax  = yaxis.range[1];
-        const dotPxY = plotH * (1 - (yVal - yMin) / (yMax - yMin));
-
-        const cx = margin.l + localX;
-        const cy = margin.t + dotPxY;
-
-        dot.setAttribute("cx", cx);
-        dot.setAttribute("cy", cy);
+        dot.setAttribute("cx", margin.l + xPx);
+        dot.setAttribute("cy", margin.t + yPx);
         dot.style.display = "block";
+      };
 
-        // label: 14px to the right, vertically centred on dot
-        const d   = new Date(xVal);
-        const mon = d.toLocaleString("en-GB", { month: "short" });
-        const yr  = d.getFullYear();
-        hoverLabel.textContent = `${mon} ${yr}  ${yVal.toFixed(4)}`;
-        hoverLabel.setAttribute("x", cx + 14);
-        hoverLabel.setAttribute("y", cy + 4);
-        hoverLabel.style.display = "block";
-      });
+      plotDiv._overlayLeave = () => hideDot();
 
-      plotDiv.addEventListener("mouseleave", hideDot);
+      plotDiv.addEventListener("mousemove",  plotDiv._overlayHandler);
+      plotDiv.addEventListener("mouseleave", plotDiv._overlayLeave);
     }
-    // ────────────────────────────────────────────────────────────────────────
-
-    function updatePlot() {
-      if (!fullData.length) return;
-
-      const hNum      = getCurrentH1Numeric();
-      const kernelRaw = document.getElementById("kernel").value;
-      const pcRaw     = document.getElementById("pcType").value;
-      const estRaw    = document.getElementById("estimator").value;
-      const coefRaw   = document.getElementById("coef").value;
-      const tol = 1e-8;
-
-      const subset = fullData.filter(d =>
-        Math.abs(parseFloat(d.h1) - hNum) < tol &&
-        d.kernel === kernelRaw && d.pc_type === pcRaw &&
-        d.estimator === estRaw && d.coef === coefRaw
-      );
-
-      hideDot();
-
-      if (subset.length === 0) {
-        Plotly.newPlot("plot", [], {
-          paper_bgcolor: "#050712", plot_bgcolor: "#050712",
-          xaxis: { visible: false }, yaxis: { visible: false }
-        });
-        currentDates = []; currentEsts = [];
-        return;
-      }
-
-      currentDates = subset.map(d => d.date);
-      currentEsts  = subset.map(d => parseFloat(d.estimate));
-      const lower  = subset.map(d => parseFloat(d.lower));
-      const upper  = subset.map(d => parseFloat(d.upper));
-
-      Plotly.newPlot("plot", [
-        {
-          x: [...currentDates, ...currentDates.slice().reverse()],
-          y: [...upper, ...lower.slice().reverse()],
-          fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" }, name: "CI",
-          hoverinfo: "skip"
-        },
-        {
-          x: currentDates, y: currentEsts, mode: "lines", name: "",
-          line: { width: 2, color: "#31e1ff" },
-          hoverinfo: "skip"
-        }
-      ], {
-        showlegend: false,
-        paper_bgcolor: "#050712", plot_bgcolor: "#050712",
-        margin: { l: 60, r: 40, t: 40, b: 50 },
-        hovermode: false,
-        xaxis: {
-          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
-          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
-        },
-        yaxis: {
-          zeroline: true, zerolinecolor: "#303548",
-          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
-        }
-      }, { responsive: true }).then(() => {
-        // Resize the overlay SVG to match the plot div
-        const plotDiv = document.getElementById("plot");
-        const overlay = document.getElementById("hover-overlay");
-        overlay.setAttribute("width",  plotDiv.offsetWidth);
-        overlay.setAttribute("height", plotDiv.offsetHeight);
-      });
-    }
-
-    // Set up the overlay once on load
-    window.addEventListener("DOMContentLoaded", setupOverlay);
   </script>
 </body>
 </html>
