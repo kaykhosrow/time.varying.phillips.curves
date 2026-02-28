@@ -28,7 +28,6 @@
     }
 
     html, body {
-      overflow: hidden;
       height: 100%;
     }
 
@@ -44,8 +43,17 @@
       text-size-adjust: none;
       display: flex;
       justify-content: center;
-      align-items: center;
+      /* Landing: centered; App: top-aligned with padding */
+      align-items: flex-start;
       min-width: 1000px;
+      overflow-x: hidden;
+      overflow-y: auto;
+    }
+
+    /* Landing page: vertically centered */
+    body.landing-active {
+      align-items: center;
+      overflow: hidden;
     }
 
     body::before {
@@ -63,6 +71,12 @@
       transform-origin: center center;
       position: relative;
       z-index: 1;
+    }
+
+    /* App shell: no scaling, fixed layout */
+    .main-shell.app-mode {
+      transform: none;
+      margin: 30px auto;
     }
 
     /* Stop click-through on cards */
@@ -86,6 +100,8 @@
 
     #app {
       background: linear-gradient(135deg, var(--card-bg) 0%, var(--card-bg-soft) 100%);
+      /* Lock minimum width so inner elements never wrap */
+      min-width: 900px;
     }
 
     h1, h2 {
@@ -95,7 +111,7 @@
     }
 
     h1 { font-size: 1.8rem; }
-    h2 { font-size: 1.5rem; }
+    h2 { font-size: 1.5rem; white-space: nowrap; }
 
     p {
       margin: 8px 0;
@@ -115,6 +131,8 @@
       text-transform: uppercase;
       letter-spacing: 0.12em;
       color: var(--accent);
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .pill-dot {
@@ -123,6 +141,7 @@
       border-radius: 50%;
       background: var(--accent);
       box-shadow: 0 0 10px var(--accent);
+      flex-shrink: 0;
     }
 
     .controls-row {
@@ -268,6 +287,7 @@
       height: auto;
       box-shadow: none;
       width: 80px;
+      flex-shrink: 0;
     }
 
     .pill-button:hover {
@@ -311,12 +331,15 @@
       animation: fadeInNote 0.5s ease-out 0.7s forwards;
     }
 
+    /* ─── App header: locked, never wraps ─── */
     .app-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 4px;
       gap: 12px;
+      flex-wrap: nowrap;
+      min-width: 0;
     }
 
     .app-header-right {
@@ -324,6 +347,7 @@
       flex-direction: row;
       align-items: center;
       gap: 10px;
+      flex-shrink: 0;
     }
 
     .plot-shell {
@@ -336,6 +360,8 @@
     #plot {
       flex: 1 1 auto;
       min-height: 520px;
+      /* Lock the plot so it never collapses below a usable width */
+      min-width: 600px;
       border-radius: 14px;
       background: #050712;
       padding: 6px 18px 6px 6px;
@@ -344,6 +370,7 @@
 
     .slider-shell {
       width: 110px;
+      flex-shrink: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -488,6 +515,11 @@
       white-space: nowrap;
     }
 
+    /* ─── App footer: locked width to match card ─── */
+    #app-footer {
+      min-width: 900px;
+    }
+
     /* Credit line */
     .credit-line {
       text-align: left;
@@ -502,8 +534,8 @@
   </style>
 </head>
 
-<body onclick="handleBgClick(event)">
-  <div class="main-shell">
+<body class="landing-active" onclick="handleBgClick(event)">
+  <div class="main-shell" id="mainShell">
     <!-- LANDING VIEW -->
     <div id="landing" class="card active">
       <h1>Time-Varying Phillips Curves</h1>
@@ -603,7 +635,7 @@
       </div>
     </div>
     <div id="app-footer" style="display:none; margin-top: 20px;">
-      <div style="max-width: 1120px;">
+      <div>
         <hr id="app-footer-hr" class="footer-line-animate" style="border:none; border-top: 1px solid rgba(255,255,255,0.375); margin: 0 0 18px 0;">
         <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
       </div>
@@ -675,19 +707,16 @@
             "620":"PRT","703":"SVK","705":"SVN","724":"ESP"
           };
 
-          // Filter out Antarctica and sub-features outside inhabited world
           const filtered = {
             type: 'FeatureCollection',
             features: countries.features
-              .filter(d => String(d.id) !== '10') // Antarctica
+              .filter(d => String(d.id) !== '10')
               .map(d => {
-                // For multipolygon countries, strip polygons outside lon -170..180, lat -60..85
                 if (d.geometry && d.geometry.type === 'MultiPolygon') {
                   const polys = d.geometry.coordinates.filter(poly => {
                     const ring = poly[0];
                     const avgLon = ring.reduce((s,p) => s+p[0], 0) / ring.length;
                     const avgLat = ring.reduce((s,p) => s+p[1], 0) / ring.length;
-                    // Exclude remote Pacific/Atlantic islands and French Guiana
                     const iso = numericToAlpha3[String(d.id).padStart(3,'0')];
                     if (iso === 'FRA') return avgLon > -10 && avgLat > 40;
                     return avgLon > -170 && avgLat > -58 && avgLat < 84;
@@ -774,9 +803,13 @@
     function goBack() {
       document.getElementById("app").classList.remove("active");
       document.getElementById("app-footer").style.display = "none";
+
+      // Switch body back to landing layout (vertically centered)
+      document.body.classList.add("landing-active");
+      document.getElementById("mainShell").classList.remove("app-mode");
+
       const lc = document.getElementById("landing-credit");
       lc.style.display = "block";
-      // Re-animate the separator line only (not the wrapper)
       const lcLine = document.getElementById("landing-line");
       const lcP    = document.getElementById("landing-text");
       lcLine.classList.remove("footer-line-animate");
@@ -792,7 +825,6 @@
       return (val || "").trim().replace(/^"|"$/g, "").replace(/\r/g, "");
     }
 
-    // Convert DD/MM/YYYY to YYYY-MM-DD for Plotly
     function parseDate(val) {
       const s = cleanValue(val);
       const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -842,6 +874,11 @@
       document.getElementById("landing").classList.remove("active");
       document.getElementById("app").classList.add("active");
       document.getElementById("landing-credit").style.display = "none";
+
+      // Switch body to app layout (top-aligned, scrollable)
+      document.body.classList.remove("landing-active");
+      document.getElementById("mainShell").classList.add("app-mode");
+
       const af = document.getElementById("app-footer");
       af.style.display = "block";
       const afHr = document.getElementById("app-footer-hr");
@@ -850,7 +887,6 @@
       afHr.classList.add("footer-line-animate");
       afP.classList.add("footer-text-animate");
 
-      // Wait two frames for layout to settle, then size the slider
       requestAnimationFrame(() => requestAnimationFrame(syncSliderLength));
 
       fetch(file)
@@ -935,7 +971,6 @@
       const sel   = document.getElementById("coef");
       sel.innerHTML = "";
 
-      // Fixed display order: Constant, inflation terms, then Unemployment
       const order = ["(Intercept)", "dpi_lag1", "dpi_lead1", "du"];
       const ordered = [
         ...order.filter(k => coefs.includes(k)),
@@ -948,7 +983,6 @@
         sel.appendChild(o);
       });
 
-      // Default selection: du (Unemployment) if present
       const hasDu = coefs.includes("du");
       sel.value = hasDu ? "du" : (ordered[0] || "");
     }
