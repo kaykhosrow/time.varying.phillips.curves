@@ -321,6 +321,9 @@
           <svg id="hover-overlay" width="100%" height="100%">
             <circle id="hover-dot" r="5" fill="#31e1ff" stroke="#05060a" stroke-width="2"
                     style="display:none; filter: drop-shadow(0 0 4px #31e1ff);"/>
+            <text id="hover-label" fill="#f5f5f7" font-size="12"
+                  font-family="system-ui, -apple-system, sans-serif"
+                  style="display:none; pointer-events:none;"></text>
           </svg>
         </div>
 
@@ -652,9 +655,18 @@
     }
 
     // ── Dot overlay helpers ──────────────────────────────────────────────────
-    const dot = document.getElementById("hover-dot");
+    const dot        = document.getElementById("hover-dot");
+    const hoverLabel = document.getElementById("hover-label");
 
-    function hideDot() { dot.style.display = "none"; }
+    function hideDot() {
+      dot.style.display        = "none";
+      hoverLabel.style.display = "none";
+    }
+
+    function plotlyDateToMs(val) {
+      if (typeof val === "number") return val;
+      return new Date(val).getTime();
+    }
 
     function getPlotAxes() {
       const gd = document.getElementById("plot");
@@ -677,49 +689,57 @@
         const xaxis  = plotDiv._fullLayout.xaxis;
         const yaxis  = plotDiv._fullLayout.yaxis;
 
-        const pxX   = e.clientX - rect.left;
-        const pxY   = e.clientY - rect.top;
-        const localX = pxX - margin.l;
-        const localY = pxY - margin.t;
-        const plotW  = rect.width  - margin.l - margin.r;
-        const plotH  = rect.height - margin.t - margin.b;
+        const localX = e.clientX - rect.left - margin.l;
+        const localY = e.clientY - rect.top  - margin.t;
+        const plotW  = xaxis._length;
+        const plotH  = yaxis._length;
 
         if (localX < 0 || localX > plotW || localY < 0 || localY > plotH) {
           hideDot(); return;
         }
 
-        // Convert pixel → x data value using axis range + plot width
-        const xRange = xaxis.range; // [minMs, maxMs] as Plotly date numbers
-        const xMin = xaxis.r2l ? xaxis.r2l(xRange[0]) : new Date(xRange[0]).getTime();
-        const xMax = xaxis.r2l ? xaxis.r2l(xRange[1]) : new Date(xRange[1]).getTime();
+        // pixel → x milliseconds
+        const xMin = plotlyDateToMs(xaxis.range[0]);
+        const xMax = plotlyDateToMs(xaxis.range[1]);
         const xVal = xMin + (localX / plotW) * (xMax - xMin);
 
-        // Bisect currentDates to find surrounding indices
-        const timestamps = currentDates.map(d => new Date(d).getTime());
-        let lo = 0, hi = timestamps.length - 1;
+        // bisect
+        const ts = currentDates.map(d => new Date(d).getTime());
+        let lo = 0, hi = ts.length - 1;
         while (lo < hi - 1) {
           const mid = (lo + hi) >> 1;
-          timestamps[mid] <= xVal ? lo = mid : hi = mid;
+          ts[mid] <= xVal ? lo = mid : hi = mid;
         }
 
-        // Interpolate estimate value
+        // interpolate y
         let yVal;
         if (lo === hi) {
           yVal = currentEsts[lo];
         } else {
-          const frac = (xVal - timestamps[lo]) / (timestamps[hi] - timestamps[lo]);
+          const frac = (xVal - ts[lo]) / (ts[hi] - ts[lo]);
           yVal = currentEsts[lo] + frac * (currentEsts[hi] - currentEsts[lo]);
         }
 
-        // Convert y data value → pixel using axis range + plot height
-        // Plotly y-axis: range[0] = bottom, range[1] = top (screen y inverted)
-        const yRange = yaxis.range;
-        const yMin = yRange[0], yMax = yRange[1];
-        const dotPxY = plotH - ((yVal - yMin) / (yMax - yMin)) * plotH;
+        // y data → pixel (range[0] is bottom, screen is inverted)
+        const yMin  = yaxis.range[0];
+        const yMax  = yaxis.range[1];
+        const dotPxY = plotH * (1 - (yVal - yMin) / (yMax - yMin));
 
-        dot.setAttribute("cx", margin.l + localX);
-        dot.setAttribute("cy", margin.t + dotPxY);
+        const cx = margin.l + localX;
+        const cy = margin.t + dotPxY;
+
+        dot.setAttribute("cx", cx);
+        dot.setAttribute("cy", cy);
         dot.style.display = "block";
+
+        // label: 14px to the right, vertically centred on dot
+        const d   = new Date(xVal);
+        const mon = d.toLocaleString("en-GB", { month: "short" });
+        const yr  = d.getFullYear();
+        hoverLabel.textContent = `${mon} ${yr}  ${yVal.toFixed(4)}`;
+        hoverLabel.setAttribute("x", cx + 14);
+        hoverLabel.setAttribute("y", cy + 4);
+        hoverLabel.style.display = "block";
       });
 
       plotDiv.addEventListener("mouseleave", hideDot);
@@ -763,16 +783,19 @@
           x: [...currentDates, ...currentDates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
           fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" }, name: "CI"
+          line: { color: "transparent" }, name: "CI",
+          hoverinfo: "skip"
         },
         {
           x: currentDates, y: currentEsts, mode: "lines", name: "",
-          line: { width: 2, color: "#31e1ff" }
+          line: { width: 2, color: "#31e1ff" },
+          hoverinfo: "skip"
         }
       ], {
         showlegend: false,
         paper_bgcolor: "#050712", plot_bgcolor: "#050712",
         margin: { l: 60, r: 40, t: 40, b: 50 },
+        hovermode: false,
         xaxis: {
           type: "date", tickformat: "%Y", hoverformat: "%b %Y",
           tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
