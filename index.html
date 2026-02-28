@@ -1025,10 +1025,8 @@
       const lower = subset.map(d => parseFloat(d.lower));
       const upper = subset.map(d => parseFloat(d.upper));
 
-      // lock x range to full sample
       const xRange = [dates[0], dates[dates.length - 1]];
 
-      // lock y range around CI band with small padding
       let yMin = Math.min(...lower);
       let yMax = Math.max(...upper);
       const span = yMax - yMin;
@@ -1053,14 +1051,15 @@
         line: { width: 2, color: "#31e1ff" }
       };
 
+      // hover dot: same colour as series, black border
       const hoverDotTrace = {
         x: [dates[0]],
         y: [ests[0]],
         mode: "markers",
         marker: {
           size: 8,
-          color: "#ffffff",
-          line: { color: "#31e1ff", width: 1.5 }
+          color: "#31e1ff",
+          line: { color: "#000000", width: 1.5 }
         },
         name: "hover-dot",
         hoverinfo: "skip",
