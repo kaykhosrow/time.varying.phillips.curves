@@ -534,6 +534,12 @@
       user-select: none;
     }
 
+    /* Slightly rounded Plotly hover boxes */
+    .hoverlayer .hoverlabel rect {
+      rx: 5;
+      ry: 5;
+    }
+
   </style>
 </head>
 
@@ -1051,7 +1057,6 @@
         line: { width: 2, color: "#31e1ff" }
       };
 
-      // hover dot: same colour as series, black border
       const hoverDotTrace = {
         x: [dates[0]],
         y: [ests[0]],
