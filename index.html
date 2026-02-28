@@ -772,13 +772,6 @@
     let coefBySpec = {};
 
     function goBack() {
-      // Remove the plot completely so hover state / listeners reset
-      try {
-        if (window.Plotly && document.getElementById("plot")) {
-          Plotly.purge("plot");
-        }
-      } catch (e) {}
-
       document.getElementById("app").classList.remove("active");
       document.getElementById("app-footer").style.display = "none";
       const lc = document.getElementById("landing-credit");
@@ -921,7 +914,7 @@
       slider.min   = 0;
       slider.max   = Math.max(h1Values.length - 1, 0);
       slider.step  = 1;
-      slider.value = Math.floor(h1Values.length - 1); // your preferred default
+      slider.value = Math.floor(h1Values.length / 2);
       updateBandwidthLabel();
 
       fillSelect("kernel",    kerSet,  prettyKernel);
@@ -971,7 +964,6 @@
         "h = " + getCurrentH1Numeric().toFixed(1);
     }
 
-    // === Plot with hover dot and locked axes / no drag ===
     function updatePlot() {
       if (!fullData.length) return;
 
@@ -992,7 +984,7 @@
         Plotly.newPlot("plot", [], {
           paper_bgcolor: "#050712", plot_bgcolor: "#050712",
           xaxis: { visible: false }, yaxis: { visible: false }
-        }, {responsive:true});
+        });
         return;
       }
 
@@ -1006,79 +998,25 @@
           x: [...dates, ...dates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
           fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" }, name: "CI",
-          hoverinfo: "skip"
+          line: { color: "transparent" }, name: "CI"
         },
         {
           x: dates, y: ests, mode: "lines", name: "",
           line: { width: 2, color: "#31e1ff" }
-        },
-        {
-          // hover dot that follows the series
-          x: [],
-          y: [],
-          mode: "markers",
-          name: "",
-          marker: {
-            size: 7,
-            color: "#31e1ff",
-            line: { color: "#05060a", width: 2 }
-          },
-          hoverinfo: "skip",
-          showlegend: false
         }
       ], {
         showlegend: false,
         paper_bgcolor: "#050712", plot_bgcolor: "#050712",
         margin: { l: 60, r: 40, t: 40, b: 50 },
-        dragmode: false,            // <- disable dragging completely
-        hovermode: "x",             // <- clean x-wise hover
         xaxis: {
-          type: "date",
-          tickformat: "%Y",
-          hoverformat: "%b %Y",
-          tickangle: 0,
-          showgrid: false,
-          linecolor: "#3b3f55",
-          nticks: 7,
-          fixedrange: true          // prevent panning / gaps at edges
+          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
+          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
         },
         yaxis: {
-          zeroline: true,
-          zerolinecolor: "#303548",
-          showgrid: false,
-          linecolor: "#3b3f55",
-          tickformat: ".2f",
-          fixedrange: true          // lock vertical range too
+          zeroline: true, zerolinecolor: "#303548",
+          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
         }
-      }, {
-        responsive: true,
-        displayModeBar: false,
-        scrollZoom: false,
-        doubleClick: false
-      });
-
-      const plotEl = document.getElementById("plot");
-
-      // Clear any old listeners so they don't pile up
-      if (plotEl.removeAllListeners) {
-        plotEl.removeAllListeners();
-      }
-
-      plotEl.on("plotly_hover", function(data) {
-        // find the point on the line trace (trace index 1)
-        const pt = data.points.find(p => p.curveNumber === 1);
-        if (!pt) return;
-
-        Plotly.restyle("plot", {
-          x: [[pt.x]],
-          y: [[pt.y]]
-        }, [2]); // update trace 2 (hover dot)
-      });
-
-      plotEl.on("plotly_unhover", function() {
-        Plotly.restyle("plot", { x: [[]], y: [[]] }, [2]);
-      });
+      }, { responsive: true });
     }
   </script>
 
