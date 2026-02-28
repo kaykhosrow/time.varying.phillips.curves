@@ -554,58 +554,58 @@
   <!-- ══ LANDING STAGE ══ -->
   <div id="landing-stage" class="stage">
     <div class="main-shell">
-    <!-- LANDING VIEW -->
-    <div id="landing" class="card active">
-      <h1>Time-Varying Phillips Curves</h1>
-      <p>Browse kernel-based estimates of the Phillips curve over time.</p>
+      <!-- LANDING VIEW -->
+      <div id="landing" class="card active">
+        <h1>Time-Varying Phillips Curves</h1>
+        <p>Browse kernel-based estimates of the Phillips curve over time.</p>
 
-      <div class="controls-row" style="justify-content: space-between; align-items: center;">
-        <div class="control-group landing-region-group">
-          <label for="regionSelector" class="control-label">Region:</label>
-          <select id="regionSelector" onchange="onRegionChange(this.value)">
-            <option value="euro-area">Euro Area</option>
-          </select>
+        <div class="controls-row" style="justify-content: space-between; align-items: center;">
+          <div class="control-group landing-region-group">
+            <label for="regionSelector" class="control-label">Region:</label>
+            <select id="regionSelector" onchange="onRegionChange(this.value)">
+              <option value="euro-area">Euro Area</option>
+            </select>
+          </div>
+          <div class="control-group landing-region-group" style="margin-left: -60px;">
+            <label for="countrySelector" class="control-label">Country:</label>
+            <select id="countrySelector" onchange="onCountryChange(this.value)">
+              <option value="">All</option>
+              <option value="AUT">Austria</option>
+              <option value="BEL">Belgium</option>
+              <option value="CYP">Cyprus</option>
+              <option value="EST">Estonia</option>
+              <option value="FIN">Finland</option>
+              <option value="FRA">France</option>
+              <option value="DEU">Germany</option>
+              <option value="GRC">Greece</option>
+              <option value="IRL">Ireland</option>
+              <option value="ITA">Italy</option>
+              <option value="LVA">Latvia</option>
+              <option value="LTU">Lithuania</option>
+              <option value="LUX">Luxembourg</option>
+              <option value="MLT">Malta</option>
+              <option value="NLD">Netherlands</option>
+              <option value="PRT">Portugal</option>
+              <option value="SVK">Slovakia</option>
+              <option value="SVN">Slovenia</option>
+              <option value="ESP">Spain</option>
+            </select>
+          </div>
+          <button type="button" class="primary-btn" style="padding: 8px 18px;" onclick="startApp()">Enter</button>
         </div>
-        <div class="control-group landing-region-group" style="margin-left: -60px;">
-          <label for="countrySelector" class="control-label">Country:</label>
-          <select id="countrySelector" onchange="onCountryChange(this.value)">
-            <option value="">All</option>
-            <option value="AUT">Austria</option>
-            <option value="BEL">Belgium</option>
-            <option value="CYP">Cyprus</option>
-            <option value="EST">Estonia</option>
-            <option value="FIN">Finland</option>
-            <option value="FRA">France</option>
-            <option value="DEU">Germany</option>
-            <option value="GRC">Greece</option>
-            <option value="IRL">Ireland</option>
-            <option value="ITA">Italy</option>
-            <option value="LVA">Latvia</option>
-            <option value="LTU">Lithuania</option>
-            <option value="LUX">Luxembourg</option>
-            <option value="MLT">Malta</option>
-            <option value="NLD">Netherlands</option>
-            <option value="PRT">Portugal</option>
-            <option value="SVK">Slovakia</option>
-            <option value="SVN">Slovenia</option>
-            <option value="ESP">Spain</option>
-          </select>
-        </div>
-        <button type="button" class="primary-btn" style="padding: 8px 18px;" onclick="startApp()">Enter</button>
-      </div>
 
-      <!-- Map -->
-      <div class="map-shell" style="position:relative;">
-        <div id="map-tooltip"></div>
-        <svg id="regionMap"></svg>
+        <!-- Map -->
+        <div class="map-shell" style="position:relative;">
+          <div id="map-tooltip"></div>
+          <svg id="regionMap"></svg>
+        </div>
       </div>
-    </div>
-    <div id="landing-credit" style="width:820px; margin: 6px auto 0;">
-      <div style="display:inline-grid; grid-template-columns: 1fr; width:100%;">
-        <div id="landing-line" class="footer-line-animate" style="height:1px; background:rgba(255,255,255,0.375); margin: 0 0 13px 0;"></div>
-        <p id="landing-text" class="footer-text-animate" style="margin:0; font-size:0.71rem; color:rgba(255,255,255,0.50); letter-spacing:0.06em; white-space:nowrap;">Developed by Omar Kaykhusraw.</p>
+      <div id="landing-credit" style="width:820px; margin: 6px auto 0;">
+        <div style="display:inline-grid; grid-template-columns: 1fr; width:100%;">
+          <div id="landing-line" class="footer-line-animate" style="height:1px; background:rgba(255,255,255,0.375); margin: 0 0 13px 0;"></div>
+          <p id="landing-text" class="footer-text-animate" style="margin:0; font-size:0.71rem; color:rgba(255,255,255,0.50); letter-spacing:0.06em; white-space:nowrap;">Developed by Omar Kaykhusraw.</p>
+        </div>
       </div>
-    </div>
     </div><!-- /.main-shell -->
   </div><!-- /#landing-stage -->
 
@@ -890,6 +890,9 @@
     function startApp() {
       const region = document.getElementById("regionSelector").value;
       const file   = REGION_FILES[region];
+
+      // 🔧 Ensure the app card itself is visible when app-stage is shown
+      document.getElementById("app").classList.add("active");
 
       document.getElementById("landing-stage").style.display = "none";
 
