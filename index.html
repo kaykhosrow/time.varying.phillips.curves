@@ -107,10 +107,7 @@
     .app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:12px;}
     .app-header-right{display:flex;flex-direction:row;align-items:center;gap:10px;}
     .plot-shell{margin-top:18px;display:flex;gap:18px;align-items:stretch;position:relative;}
-    #plot{
-      flex:1 1 auto;min-height:520px;border-radius:14px;
-      background:#050712;padding:6px 18px 6px 6px;overflow:hidden;
-    }
+    #plot{ border-radius:14px; }
     .slider-shell{width:110px;display:flex;flex-direction:column;align-items:center;}
     .slider-column{
       width:100%;flex:1 1 auto;border-radius:14px;
@@ -279,10 +276,12 @@
         <div class="control-group"><label class="control-label" for="coef">Coefficient:</label><select id="coef"></select></div>
       </div>
       <div class="plot-shell">
-        <div id="plot"></div>
-        <!-- Speech-bubble overlays, parented to plot-shell -->
-        <div id="tv-val"  class="tv-bubble"></div>
-        <div id="tv-date" class="tv-bubble"></div>
+        <div id="plot-wrapper" style="flex:1 1 auto;position:relative;">
+          <div id="plot" style="width:100%;min-height:520px;border-radius:14px;background:#050712;padding:6px 18px 6px 6px;overflow:hidden;"></div>
+          <!-- Speech-bubble overlays, coords are relative to plot-wrapper -->
+          <div id="tv-val"  class="tv-bubble"></div>
+          <div id="tv-date" class="tv-bubble"></div>
+        </div>
         <div class="slider-shell">
           <div class="slider-column">
             <div class="slider-value-pill" id="bandwidthLabel">h = 0.5</div>
@@ -530,32 +529,138 @@
       document.getElementById('tv-date').style.display='none';
     }
 
-    // ── updatePlot ───────────────────────────────────────────────────────────
-    // Keep refs to active handlers so we can remove them before re-adding
-    let _mmHandler = null;
-    let _mlHandler = null;
+    // ── Hover overlay: one SVG sitting over the plot, never recreated ───────
+    let _overlayReady = false;
+    let _overlayDot, _overlayLine;
+    let _currentDates=[], _currentEsts=[], _currentDateMs=[];
+
+    function ensureOverlay(){
+      if(_overlayReady) return;
+      // The stable wrapper that never gets replaced by Plotly
+      const wrapper = document.getElementById('plot-wrapper');
+      wrapper.style.position = 'relative';
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+      svg.id = 'hover-overlay';
+      svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:visible;';
+      wrapper.appendChild(svg);
+
+      // Vertical crosshair line
+      _overlayLine = document.createElementNS('http://www.w3.org/2000/svg','line');
+      _overlayLine.setAttribute('stroke','rgba(49,225,255,0.25)');
+      _overlayLine.setAttribute('stroke-width','1');
+      _overlayLine.setAttribute('stroke-dasharray','3,3');
+      _overlayLine.style.display='none';
+      svg.appendChild(_overlayLine);
+
+      // Dot on the line
+      _overlayDot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+      _overlayDot.setAttribute('r','5');
+      _overlayDot.setAttribute('fill','#31e1ff');
+      _overlayDot.setAttribute('stroke','#05060a');
+      _overlayDot.setAttribute('stroke-width','2');
+      _overlayDot.style.display='none';
+      svg.appendChild(_overlayDot);
+
+      // Mouse events on the wrapper (stable — never replaced)
+      wrapper.addEventListener('mousemove', onHoverMove);
+      wrapper.addEventListener('mouseleave', onHoverLeave);
+
+      _overlayReady = true;
+    }
+
+    function onHoverMove(evt){
+      const plotEl = document.getElementById('plot');
+      if(!plotEl||!plotEl._fullLayout) return;
+      const xaxis = plotEl._fullLayout.xaxis;
+      const yaxis = plotEl._fullLayout.yaxis;
+      if(!xaxis||!yaxis||!_currentDates.length) return;
+
+      const margin = plotEl._fullLayout.margin;
+      const plotW  = xaxis._length;
+      const plotH  = yaxis._length;
+
+      // Coords relative to the wrapper div
+      const wRect = document.getElementById('plot-wrapper').getBoundingClientRect();
+      const pxX   = evt.clientX - wRect.left - margin.l;
+
+      if(pxX < 0 || pxX > plotW){ onHoverLeave(); return; }
+
+      // Find nearest data point
+      const refMs = xaxis.p2d(pxX);
+      let nearest=0, bestDist=Infinity;
+      _currentDateMs.forEach((ms,i)=>{
+        const d=Math.abs(ms-refMs);
+        if(d<bestDist){bestDist=d;nearest=i;}
+      });
+
+      const hx   = _currentDates[nearest];
+      const hxMs = _currentDateMs[nearest];
+      const hy   = _currentEsts[nearest];
+
+      // Pixel position within the wrapper
+      const dotX = margin.l + xaxis.d2p(hxMs);
+      const dotY = margin.t + yaxis.d2p(hy);
+      const axisY = margin.t + plotH;
+
+      // Move SVG elements
+      _overlayDot.setAttribute('cx', dotX);
+      _overlayDot.setAttribute('cy', dotY);
+      _overlayDot.style.display = '';
+
+      _overlayLine.setAttribute('x1', dotX); _overlayLine.setAttribute('y1', dotY);
+      _overlayLine.setAttribute('x2', dotX); _overlayLine.setAttribute('y2', axisY);
+      _overlayLine.style.display = '';
+
+      // Value bubble
+      const vb = document.getElementById('tv-val');
+      vb.textContent = hy.toFixed(2);
+      vb.style.display = 'block';
+      const bubbleW = vb.offsetWidth;
+      const rightRoom = plotW - (dotX - margin.l);
+      if(rightRoom < bubbleW + 20){
+        vb.style.left = (dotX - bubbleW - 10) + 'px';
+        vb.classList.add('flip');
+      } else {
+        vb.style.left = (dotX + 10) + 'px';
+        vb.classList.remove('flip');
+      }
+      vb.style.top = (dotY - vb.offsetHeight/2) + 'px';
+
+      // Date bubble
+      const db = document.getElementById('tv-date');
+      db.textContent = formatDateLabel(hx);
+      db.style.display = 'block';
+      const dbHalfW = db.offsetWidth / 2;
+      let dbLeft = dotX;
+      if(dbLeft - dbHalfW < margin.l)        dbLeft = margin.l + dbHalfW;
+      if(dbLeft + dbHalfW > margin.l + plotW) dbLeft = margin.l + plotW - dbHalfW;
+      db.style.left = dbLeft + 'px';
+      db.style.top  = (axisY + 2) + 'px';
+    }
+
+    function onHoverLeave(){
+      if(_overlayDot)  _overlayDot.style.display  = 'none';
+      if(_overlayLine) _overlayLine.style.display = 'none';
+      hideTooltips();
+    }
 
     function updatePlot(){
-      if(!fullData.length)return;
-
-      // Clear old handlers (stored refs let us remove from whichever node they were on)
-      if(_mmHandler && _mlHandler){
-        const old=document.getElementById("plot");
-        if(old){ old.removeEventListener("mousemove",  _mmHandler); old.removeEventListener("mouseleave", _mlHandler); }
-        _mmHandler=null; _mlHandler=null;
-      }
+      if(!fullData.length) return;
       hideTooltips();
-      const hNum     =getCurrentH1Numeric();
-      const kernelRaw=document.getElementById("kernel").value;
-      const pcRaw    =document.getElementById("pcType").value;
-      const estRaw   =document.getElementById("estimator").value;
-      const coefRaw  =document.getElementById("coef").value;
-      const tol=1e-8;
+      onHoverLeave();
 
-      const subset=fullData.filter(d=>
-        Math.abs(parseFloat(d.h1)-hNum)<tol&&
-        d.kernel===kernelRaw&&d.pc_type===pcRaw&&
-        d.estimator===estRaw&&d.coef===coefRaw
+      const hNum     = getCurrentH1Numeric();
+      const kernelRaw = document.getElementById("kernel").value;
+      const pcRaw     = document.getElementById("pcType").value;
+      const estRaw    = document.getElementById("estimator").value;
+      const coefRaw   = document.getElementById("coef").value;
+      const tol = 1e-8;
+
+      const subset = fullData.filter(d =>
+        Math.abs(parseFloat(d.h1)-hNum)<tol &&
+        d.kernel===kernelRaw && d.pc_type===pcRaw &&
+        d.estimator===estRaw && d.coef===coefRaw
       );
 
       if(!subset.length){
@@ -563,132 +668,52 @@
         return;
       }
 
-      const dates=subset.map(d=>d.date);
-      const ests =subset.map(d=>parseFloat(d.estimate));
-      const lower=subset.map(d=>parseFloat(d.lower));
-      const upper=subset.map(d=>parseFloat(d.upper));
+      const dates = subset.map(d=>d.date);
+      const ests  = subset.map(d=>parseFloat(d.estimate));
+      const lower = subset.map(d=>parseFloat(d.lower));
+      const upper = subset.map(d=>parseFloat(d.upper));
+      const dateMs = dates.map(d=>new Date(d).getTime());
 
-      // Pin x-range from data so restyle never shifts it
-      const dateMs=dates.map(d=>new Date(d).getTime());
-      const xMin=dateMs[0], xMax=dateMs[dateMs.length-1];
+      // Store for hover handler
+      _currentDates  = dates;
+      _currentEsts   = ests;
+      _currentDateMs = dateMs;
+
+      const xMin = dateMs[0], xMax = dateMs[dateMs.length-1];
 
       Plotly.newPlot("plot",[
         {
           x:[...dates,...dates.slice().reverse()],
           y:[...upper,...lower.slice().reverse()],
-          fill:"toself",fillcolor:"rgba(49,225,255,0.12)",
-          line:{color:"transparent"},name:"CI",hoverinfo:"skip"
+          fill:"toself", fillcolor:"rgba(49,225,255,0.12)",
+          line:{color:"transparent"}, name:"CI", hoverinfo:"skip"
         },
         {
-          x:dates,y:ests,mode:"lines",name:"",
-          line:{width:2,color:"#31e1ff"},hoverinfo:"skip"
-        },
-        {
-          // Hover dot – use numeric ms so restyle can't shift the date axis
-          x:[null],y:[null],mode:"markers",name:"",
-          marker:{size:9,color:"#31e1ff",line:{color:"#05060a",width:2},symbol:"circle"},
-          hoverinfo:"skip",showlegend:false
+          x:dates, y:ests, mode:"lines", name:"",
+          line:{width:2, color:"#31e1ff"}, hoverinfo:"skip"
         }
       ],{
         showlegend:false,
-        paper_bgcolor:"#050712",plot_bgcolor:"#050712",
+        paper_bgcolor:"#050712", plot_bgcolor:"#050712",
         margin:{l:60,r:40,t:40,b:50},
         uirevision:"locked",
         xaxis:{
-          type:"date",tickformat:"%Y",tickangle:0,showgrid:false,
-          linecolor:"#3b3f55",nticks:7,
-          fixedrange:true,
-          // Explicitly pin the range so no restyle ever auto-extends it
+          type:"date", tickformat:"%Y", tickangle:0, showgrid:false,
+          linecolor:"#3b3f55", nticks:7, fixedrange:true,
           range:[new Date(xMin).toISOString(), new Date(xMax).toISOString()]
         },
         yaxis:{
-          zeroline:true,zerolinecolor:"#303548",showgrid:false,
-          linecolor:"#3b3f55",tickformat:".2f",
-          fixedrange:true
+          zeroline:true, zerolinecolor:"#303548", showgrid:false,
+          linecolor:"#3b3f55", tickformat:".2f", fixedrange:true
         },
         hovermode:false
       },{responsive:true});
 
-      // IMPORTANT: get a fresh reference AFTER Plotly.newPlot (it replaces the div)
-      const plotEl=document.getElementById("plot");
-      const shellEl=document.querySelector('.plot-shell');
+      // Ensure overlay SVG is in place (only built once)
+      ensureOverlay();
 
-      _mmHandler=function(evt){
-        const gd=plotEl;
-        if(!gd||!gd._fullLayout)return;
-        const xaxis=gd._fullLayout.xaxis;
-        const yaxis=gd._fullLayout.yaxis;
-        if(!xaxis||!yaxis)return;
-
-        const margin=gd._fullLayout.margin;
-        const plotW =xaxis._length;
-        const plotH =yaxis._length;
-        const rect  =gd.getBoundingClientRect();
-
-        const pxX=evt.clientX-rect.left-margin.l;
-        if(pxX<0||pxX>plotW){hideTooltips();return;}
-
-        const refMs=xaxis.p2d(pxX);
-        let nearest=0,bestDist=Infinity;
-        dateMs.forEach((ms,i)=>{
-          const dist=Math.abs(ms-refMs);
-          if(dist<bestDist){bestDist=dist;nearest=i;}
-        });
-
-        const hx  =dates[nearest];
-        const hxMs=dateMs[nearest];
-        const hy  =ests[nearest];
-
-        const dotPxX=margin.l+xaxis.d2p(hxMs);
-        const dotPxY=margin.t+yaxis.d2p(hy);
-
-        const shellRect=shellEl.getBoundingClientRect();
-        const plotRect =gd.getBoundingClientRect();
-        const offX=plotRect.left-shellRect.left;
-        const offY=plotRect.top -shellRect.top;
-
-        Plotly.restyle("plot",{x:[[hxMs]],y:[[hy]]},[2]);
-
-        // ── Value bubble ────────────────────────────────────────────────
-        const vb=document.getElementById('tv-val');
-        vb.textContent=hy.toFixed(2);
-        vb.style.display='block';
-        const bubbleW =vb.offsetWidth;
-        const rightRoom=plotW-(dotPxX-margin.l);
-        let vbLeft;
-        if(rightRoom < bubbleW+20){
-          vbLeft=offX+dotPxX-bubbleW-10;
-          vb.classList.add('flip');
-        } else {
-          vbLeft=offX+dotPxX+10;
-          vb.classList.remove('flip');
-        }
-        vb.style.left=vbLeft+'px';
-        vb.style.top =(offY+dotPxY-vb.offsetHeight/2)+'px';
-
-        // ── Date bubble ─────────────────────────────────────────────────
-        const db=document.getElementById('tv-date');
-        db.textContent=formatDateLabel(hx);
-        db.style.display='block';
-        const dbW    =db.offsetWidth;
-        const dbHalfW=dbW/2;
-        const axisBottomPx=margin.t+plotH;
-        const plotLeft =offX+margin.l;
-        const plotRight=offX+margin.l+plotW;
-        let dbLeft=offX+dotPxX;
-        if(dbLeft-dbHalfW < plotLeft)  dbLeft=plotLeft +dbHalfW;
-        if(dbLeft+dbHalfW > plotRight) dbLeft=plotRight-dbHalfW;
-        db.style.left=dbLeft+'px';
-        db.style.top =(offY+axisBottomPx+2)+'px';
-      };
-
-      _mlHandler=function(){
-        Plotly.restyle("plot",{x:[[null]],y:[[null]]},[2]);
-        hideTooltips();
-      };
-
-      plotEl.addEventListener("mousemove",  _mmHandler);
-      plotEl.addEventListener("mouseleave", _mlHandler);
+      // Reposition the bubble divs: they live in plot-wrapper, coords are wrapper-relative
+      // so no offset calculation needed — dotX/dotY from onHoverMove are already wrapper-local
     }
   </script>
 </body>
