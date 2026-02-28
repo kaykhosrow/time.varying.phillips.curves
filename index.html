@@ -665,67 +665,58 @@
       };
     }
 
-    // Given pixel x inside the plot area, find the interpolated y on the estimate line
-    function interpolateY(pxX) {
-      const axes = getPlotAxes();
-      if (!axes || !currentDates.length) return null;
-
-      // Convert pixel → data value for x
-      const xVal = axes.xaxis.p2d(pxX); // milliseconds timestamp
-
-      // currentDates are "YYYY-MM-DD" strings; convert to ms for bisecting
-      const timestamps = currentDates.map(d => new Date(d).getTime());
-
-      // Binary search for surrounding indices
-      let lo = 0, hi = timestamps.length - 1;
-      while (lo < hi - 1) {
-        const mid = (lo + hi) >> 1;
-        if (timestamps[mid] <= xVal) lo = mid; else hi = mid;
-      }
-
-      if (lo === hi) return { y: currentEsts[lo], idx: lo };
-
-      // Linear interpolation
-      const t0 = timestamps[lo], t1 = timestamps[hi];
-      const frac = (xVal - t0) / (t1 - t0);
-      const yInterp = currentEsts[lo] + frac * (currentEsts[hi] - currentEsts[lo]);
-      return { y: yInterp, idx: lo };
-    }
-
     function setupOverlay() {
       const plotDiv = document.getElementById("plot");
-      const overlay = document.getElementById("hover-overlay");
 
-      // The actual Plotly drawing area (inside margins) is in .plot (SVG group)
       plotDiv.addEventListener("mousemove", function(e) {
         if (!currentDates.length) return;
-        const axes = getPlotAxes();
-        if (!axes) return;
+        if (!plotDiv._fullLayout) return;
 
-        // Get cursor position relative to the plot div
-        const rect = plotDiv.getBoundingClientRect();
-        const pxX = e.clientX - rect.left;
-        const pxY = e.clientY - rect.top;
-
-        // Plotly's xaxis.l2p / p2d work in axis-local pixels (subtract the left margin)
+        const rect   = plotDiv.getBoundingClientRect();
         const margin = plotDiv._fullLayout.margin;
+        const xaxis  = plotDiv._fullLayout.xaxis;
+        const yaxis  = plotDiv._fullLayout.yaxis;
+
+        const pxX   = e.clientX - rect.left;
+        const pxY   = e.clientY - rect.top;
+        const localX = pxX - margin.l;
+        const localY = pxY - margin.t;
         const plotW  = rect.width  - margin.l - margin.r;
         const plotH  = rect.height - margin.t - margin.b;
 
-        // Only show dot when cursor is inside the plot area
-        const localX = pxX - margin.l;
-        const localY = pxY - margin.t;
         if (localX < 0 || localX > plotW || localY < 0 || localY > plotH) {
           hideDot(); return;
         }
 
-        const result = interpolateY(localX);
-        if (!result) { hideDot(); return; }
+        // Convert pixel → x data value using axis range + plot width
+        const xRange = xaxis.range; // [minMs, maxMs] as Plotly date numbers
+        const xMin = xaxis.r2l ? xaxis.r2l(xRange[0]) : new Date(xRange[0]).getTime();
+        const xMax = xaxis.r2l ? xaxis.r2l(xRange[1]) : new Date(xRange[1]).getTime();
+        const xVal = xMin + (localX / plotW) * (xMax - xMin);
 
-        // Convert interpolated y back to pixel
-        const dotPxY = axes.yaxis.d2p(result.y);
+        // Bisect currentDates to find surrounding indices
+        const timestamps = currentDates.map(d => new Date(d).getTime());
+        let lo = 0, hi = timestamps.length - 1;
+        while (lo < hi - 1) {
+          const mid = (lo + hi) >> 1;
+          timestamps[mid] <= xVal ? lo = mid : hi = mid;
+        }
 
-        // Position the dot (in overlay SVG coords = plot div coords)
+        // Interpolate estimate value
+        let yVal;
+        if (lo === hi) {
+          yVal = currentEsts[lo];
+        } else {
+          const frac = (xVal - timestamps[lo]) / (timestamps[hi] - timestamps[lo]);
+          yVal = currentEsts[lo] + frac * (currentEsts[hi] - currentEsts[lo]);
+        }
+
+        // Convert y data value → pixel using axis range + plot height
+        // Plotly y-axis: range[0] = bottom, range[1] = top (screen y inverted)
+        const yRange = yaxis.range;
+        const yMin = yRange[0], yMax = yRange[1];
+        const dotPxY = plotH - ((yVal - yMin) / (yMax - yMin)) * plotH;
+
         dot.setAttribute("cx", margin.l + localX);
         dot.setAttribute("cy", margin.t + dotPxY);
         dot.style.display = "block";
