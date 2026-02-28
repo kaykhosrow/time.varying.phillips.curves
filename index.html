@@ -531,17 +531,18 @@
     }
 
     // ── updatePlot ───────────────────────────────────────────────────────────
-    let _pinnedRange = null;   // stores [minMs, maxMs] after first plot
+    // Keep refs to active handlers so we can remove them before re-adding
+    let _mmHandler = null;
+    let _mlHandler = null;
 
     function updatePlot(){
       if(!fullData.length)return;
 
-      // Remove old listeners cleanly
-      const oldPlot=document.getElementById("plot");
-      const newPlot=oldPlot.cloneNode(false);
-      oldPlot.parentNode.replaceChild(newPlot,oldPlot);
+      // Remove old mouse listeners from the existing plotEl (keeps Plotly internals intact)
+      const plotEl=document.getElementById("plot");
+      if(_mmHandler){ plotEl.removeEventListener("mousemove",  _mmHandler); _mmHandler=null; }
+      if(_mlHandler){ plotEl.removeEventListener("mouseleave", _mlHandler); _mlHandler=null; }
       hideTooltips();
-
       const hNum     =getCurrentH1Numeric();
       const kernelRaw=document.getElementById("kernel").value;
       const pcRaw    =document.getElementById("pcType").value;
@@ -606,12 +607,12 @@
         hovermode:false
       },{responsive:true});
 
-      const plotEl=document.getElementById("plot");
       const shellEl=document.querySelector('.plot-shell');
 
-      plotEl.addEventListener("mousemove",function(evt){
-        const gd=plotEl;
-        if(!gd._fullLayout)return;
+      _mmHandler=function(evt){
+        // plotEl is still the same DOM node; re-fetch it so closure is safe
+        const gd=document.getElementById("plot");
+        if(!gd||!gd._fullLayout)return;
         const xaxis=gd._fullLayout.xaxis;
         const yaxis=gd._fullLayout.yaxis;
         if(!xaxis||!yaxis)return;
@@ -619,13 +620,11 @@
         const margin=gd._fullLayout.margin;
         const plotW =xaxis._length;
         const plotH =yaxis._length;
-        const rect  =plotEl.getBoundingClientRect();
+        const rect  =gd.getBoundingClientRect();
 
         const pxX=evt.clientX-rect.left-margin.l;
-        // Hide when outside data area
         if(pxX<0||pxX>plotW){hideTooltips();return;}
 
-        // Nearest data index
         const refMs=xaxis.p2d(pxX);
         let nearest=0,bestDist=Infinity;
         dateMs.forEach((ms,i)=>{
@@ -633,80 +632,60 @@
           if(dist<bestDist){bestDist=dist;nearest=i;}
         });
 
-        const hx =dates[nearest];
+        const hx  =dates[nearest];
         const hxMs=dateMs[nearest];
-        const hy =ests[nearest];
+        const hy  =ests[nearest];
 
-        // Pixel coords of dot in plotEl space
         const dotPxX=margin.l+xaxis.d2p(hxMs);
         const dotPxY=margin.t+yaxis.d2p(hy);
 
-        // Offset of plotEl within shell
         const shellRect=shellEl.getBoundingClientRect();
-        const plotRect =plotEl.getBoundingClientRect();
+        const plotRect =gd.getBoundingClientRect();
         const offX=plotRect.left-shellRect.left;
         const offY=plotRect.top -shellRect.top;
 
-        // Move dot (numeric x, no ISO string → won't trigger axis rescale)
         Plotly.restyle("plot",{x:[[hxMs]],y:[[hy]]},[2]);
 
-        // ── Value bubble ─────────────────────────────────────────────────
+        // ── Value bubble ────────────────────────────────────────────────
         const vb=document.getElementById('tv-val');
         vb.textContent=hy.toFixed(2);
         vb.style.display='block';
-
-        // Default: bubble to the right of dot
-        // Flip to left when near right edge (within 80px of plot right)
-        const bubbleW=vb.offsetWidth;
+        const bubbleW =vb.offsetWidth;
         const rightRoom=plotW-(dotPxX-margin.l);
         let vbLeft;
         if(rightRoom < bubbleW+20){
-          // Place to left: right edge of bubble = dotPxX - 10
-          vbLeft = offX + dotPxX - bubbleW - 10;
-          vb.style.setProperty('--caret-side','right');
-          // Switch caret to right side via class
+          vbLeft=offX+dotPxX-bubbleW-10;
           vb.classList.add('flip');
         } else {
-          vbLeft = offX + dotPxX + 10;
+          vbLeft=offX+dotPxX+10;
           vb.classList.remove('flip');
         }
         vb.style.left=vbLeft+'px';
         vb.style.top =(offY+dotPxY-vb.offsetHeight/2)+'px';
 
-        // ── Date bubble ──────────────────────────────────────────────────
+        // ── Date bubble ─────────────────────────────────────────────────
         const db=document.getElementById('tv-date');
         db.textContent=formatDateLabel(hx);
         db.style.display='block';
-
-        const dbW=db.offsetWidth;
-        // Place centred on dot x, but clamp so it doesn't overflow plot edges
-        const axisBottomPx=margin.t+plotH;   // bottom of plot area in plotEl coords
-
-        // Raw centred left (transform translateX(-50%) handles centering in CSS)
-        // We override transform when near edges to clamp instead
-        let dbLeft=offX+dotPxX;
+        const dbW    =db.offsetWidth;
         const dbHalfW=dbW/2;
-        const plotLeft=offX+margin.l;
+        const axisBottomPx=margin.t+plotH;
+        const plotLeft =offX+margin.l;
         const plotRight=offX+margin.l+plotW;
-
-        // Clamp so bubble stays within plot column
-        if(dbLeft-dbHalfW < plotLeft){
-          dbLeft=plotLeft+dbHalfW;
-        } else if(dbLeft+dbHalfW > plotRight){
-          dbLeft=plotRight-dbHalfW;
-        }
-
+        let dbLeft=offX+dotPxX;
+        if(dbLeft-dbHalfW < plotLeft)  dbLeft=plotLeft +dbHalfW;
+        if(dbLeft+dbHalfW > plotRight) dbLeft=plotRight-dbHalfW;
         db.style.left=dbLeft+'px';
-        // Push down so the caret arrow tip sits exactly on the axis line
-        // axis line is at axisBottomPx; caret is 6px tall; bubble is positioned by top
-        // so top = axisBottomPx + (caret height=6) gives caret tip at axis
-        db.style.top=(offY+axisBottomPx+2)+'px';
-      });
+        db.style.top =(offY+axisBottomPx+2)+'px';
+      };
 
-      plotEl.addEventListener("mouseleave",function(){
+      _mlHandler=function(){
         Plotly.restyle("plot",{x:[[null]],y:[[null]]},[2]);
         hideTooltips();
-      });
+      };
+
+      plotEl.addEventListener("mousemove",  _mmHandler);
+      plotEl.addEventListener("mouseleave", _mlHandler);
     }
   </script>
 </body>
