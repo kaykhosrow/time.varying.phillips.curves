@@ -420,7 +420,7 @@
       cursor: pointer;
       position: absolute;
       flex-shrink: 0;
-      opacity: 0;
+      opacity: 0;                /* start invisible */
       transition: opacity 0.2s ease;
     }
 
@@ -488,10 +488,9 @@
       display: block;
     }
 
-    /* UPDATED: brighter default lines (same as previous hover stroke) */
     #regionMap .country {
       fill: none;
-      stroke: rgba(49, 225, 255, 0.5);
+      stroke: #4a4e6a;
       stroke-width: 1.0;
       stroke-linejoin: round;
       transition: fill 0.3s ease, stroke 0.3s ease;
@@ -508,10 +507,9 @@
       cursor: pointer;
     }
 
-    /* UPDATED: keep stroke the same on hover, only adjust fill */
     #regionMap .country.hoverable:hover {
       fill: rgba(49, 225, 255, 0.08);
-      /* stroke stays as default so no brightness jump */
+      stroke: rgba(49, 225, 255, 0.5);
     }
 
     #map-tooltip {
@@ -538,10 +536,12 @@
       user-select: none;
     }
 
+    /* shrink line to width of note text */
     .landing-credit-inner {
       display: inline-block;
     }
 
+    /* Tiny nudge so Plotly hover box doesn't sit exactly on the dot */
     #plot .hoverlayer {
       transform: translateX(1.5px);
     }
@@ -598,6 +598,8 @@
           <svg id="regionMap"></svg>
         </div>
       </div>
+
+      <!-- LANDING CREDIT WITH SHRINK-TO-TEXT SEPARATOR -->
       <div id="landing-credit" style="width:820px; margin: 18px auto 0;">
         <div class="landing-credit-inner">
           <div
@@ -667,7 +669,7 @@
     <div id="app-footer" style="display:none; margin-top: 20px;">
       <div>
         <hr id="app-footer-hr" class="footer-line-animate" style="border:none; border-top: 1px solid rgba(255,255,255,0.375); margin: 0 0 18px 0;">
-        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
+        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L$, Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
       </div>
     </div>
   </div>
@@ -971,6 +973,7 @@
       slider.max   = Math.max(h1Values.length - 1, 0);
       slider.step  = 1;
 
+      // Default to h = 0.5 if available, otherwise middle value
       let defaultIdx = h1Values.findIndex(v => Math.abs(v - 0.5) < 1e-8);
       if (defaultIdx === -1) {
         defaultIdx = Math.floor(h1Values.length / 2);
@@ -979,6 +982,7 @@
 
       updateBandwidthLabel();
 
+      // Now show the slider, so the thumb only appears in the correct place
       slider.style.opacity = 1;
 
       fillSelect("kernel",    kerSet,  prettyKernel);
@@ -1132,8 +1136,8 @@
       const config = { responsive: true };
 
       Plotly.newPlot(plotDiv, data, layout, config).then(gd => {
+        // Keep hover-dot wiring stable across redraws
         gd.removeAllListeners('plotly_hover');
-        gd.removeAllListeners('plotly_unhover');
 
         gd.on("plotly_hover", ev => {
           const pt = ev.points.find(p => p.curveNumber === 1);
@@ -1146,9 +1150,8 @@
           }, [2]);
         });
 
-        gd.on("plotly_unhover", () => {
-          Plotly.restyle(gd, { opacity: [0] }, [2]);
-        });
+        // NOTE: we no longer listen to plotly_unhover,
+        // so the dot stays where it is even when clicking.
       });
     }
   </script>
