@@ -309,8 +309,11 @@
     }
 
     #landing, #app {
+      display: none;
       animation: fadeIn 0.4s ease-out;
     }
+
+    #landing.active, #app.active { display: block; }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
@@ -539,7 +542,7 @@
   <!-- LANDING STAGE -->
   <div id="landing-stage" class="stage">
     <div class="main-shell">
-      <div id="landing" class="card">
+      <div id="landing" class="card active">
         <h1>Time-Varying Phillips Curves</h1>
         <p>Browse kernel-based estimates of the Phillips curve over time.</p>
 
@@ -781,17 +784,6 @@
         .catch(() => {});
     });
 
-    // Round Plotly hover tooltip corners via MutationObserver (SVG rects need rx/ry attributes)
-    const _hoverObserver = new MutationObserver(() => {
-      document.querySelectorAll('.hoverlayer .hovertext rect').forEach(r => {
-        if (r.getAttribute('rx') !== '6') {
-          r.setAttribute('rx', '6');
-          r.setAttribute('ry', '6');
-        }
-      });
-    });
-    _hoverObserver.observe(document.body, { childList: true, subtree: true });
-
     function syncSliderLength() {
       const wrapper = document.querySelector('.slider-wrapper');
       const slider  = document.getElementById('bandwidthSlider');
@@ -814,8 +806,11 @@
       document.getElementById("app-stage").style.display = "none";
       document.getElementById("app-footer").style.display = "none";
 
-      document.getElementById("landing-stage").style.display = "flex";
+      const ls = document.getElementById("landing-stage");
+      ls.style.display = "flex";
 
+      const lc = document.getElementById("landing-credit");
+      lc.style.display = "block";
       const lcLine = document.getElementById("landing-line");
       const lcP    = document.getElementById("landing-text");
       lcLine.classList.remove("footer-line-animate");
@@ -876,8 +871,11 @@
       const region = document.getElementById("regionSelector").value;
       const file   = REGION_FILES[region];
 
+      document.getElementById("app").classList.add("active");
       document.getElementById("landing-stage").style.display = "none";
-      document.getElementById("app-stage").style.display = "flex";
+
+      const appStage = document.getElementById("app-stage");
+      appStage.style.display = "flex";
 
       const af = document.getElementById("app-footer");
       af.style.display = "block";
@@ -1053,6 +1051,7 @@
         line: { width: 2, color: "#31e1ff" }
       };
 
+      // hover dot: same colour as series, black border
       const hoverDotTrace = {
         x: [dates[0]],
         y: [ests[0]],
@@ -1116,6 +1115,13 @@
             y: [[pt.y]],
             opacity: [1]
           }, [2]);
+
+          // Round hover boxes on each hover
+          const rects = gd.querySelectorAll('.hoverlayer .hoverlabel rect');
+          rects.forEach(r => {
+            r.setAttribute('rx', 6);
+            r.setAttribute('ry', 6);
+          });
         });
 
         gd.on("plotly_unhover", () => {
