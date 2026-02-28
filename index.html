@@ -534,6 +534,11 @@
       user-select: none;
     }
 
+    /* NEW: shrink line to width of note text */
+    .landing-credit-inner {
+      display: inline-block;
+    }
+
     /* Tiny nudge so Plotly hover box doesn't sit exactly on the dot */
     #plot .hoverlayer {
       transform: translateX(1.5px);
@@ -591,10 +596,22 @@
           <svg id="regionMap"></svg>
         </div>
       </div>
+
+      <!-- LANDING CREDIT WITH SHRINK-TO-TEXT SEPARATOR -->
       <div id="landing-credit" style="width:820px; margin: 6px auto 0;">
-        <div style="display:inline-grid; grid-template-columns: 1fr; width:100%;">
-          <div id="landing-line" class="footer-line-animate" style="height:1px; background:rgba(255,255,255,0.375); margin: 0 0 13px 0;"></div>
-          <p id="landing-text" class="footer-text-animate" style="margin:0; font-size:0.71rem; color:rgba(255,255,255,0.50); letter-spacing:0.06em; white-space:nowrap;">Developed by Omar Kaykhusraw.</p>
+        <div class="landing-credit-inner">
+          <div
+            id="landing-line"
+            class="footer-line-animate"
+            style="height:1px; background:rgba(255,255,255,0.375); margin: 0 0 13px 0; width:100%;"
+          ></div>
+          <p
+            id="landing-text"
+            class="footer-text-animate"
+            style="margin:0; font-size:0.71rem; color:rgba(255,255,255,0.50); letter-spacing:0.06em; white-space:nowrap;"
+          >
+            Developed by Omar Kaykhusraw.
+          </p>
         </div>
       </div>
     </div>
@@ -1107,7 +1124,6 @@
       const config = { responsive: true };
 
       Plotly.newPlot(plotDiv, data, layout, config).then(gd => {
-        // Always reset listeners so hover dot works after every change
         gd.removeAllListeners('plotly_hover');
         gd.removeAllListeners('plotly_unhover');
 
