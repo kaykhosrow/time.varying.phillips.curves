@@ -538,10 +538,12 @@
     function updatePlot(){
       if(!fullData.length)return;
 
-      // Remove old mouse listeners from the existing plotEl (keeps Plotly internals intact)
-      const plotEl=document.getElementById("plot");
-      if(_mmHandler){ plotEl.removeEventListener("mousemove",  _mmHandler); _mmHandler=null; }
-      if(_mlHandler){ plotEl.removeEventListener("mouseleave", _mlHandler); _mlHandler=null; }
+      // Clear old handlers (stored refs let us remove from whichever node they were on)
+      if(_mmHandler && _mlHandler){
+        const old=document.getElementById("plot");
+        if(old){ old.removeEventListener("mousemove",  _mmHandler); old.removeEventListener("mouseleave", _mlHandler); }
+        _mmHandler=null; _mlHandler=null;
+      }
       hideTooltips();
       const hNum     =getCurrentH1Numeric();
       const kernelRaw=document.getElementById("kernel").value;
@@ -607,11 +609,12 @@
         hovermode:false
       },{responsive:true});
 
+      // IMPORTANT: get a fresh reference AFTER Plotly.newPlot (it replaces the div)
+      const plotEl=document.getElementById("plot");
       const shellEl=document.querySelector('.plot-shell');
 
       _mmHandler=function(evt){
-        // plotEl is still the same DOM node; re-fetch it so closure is safe
-        const gd=document.getElementById("plot");
+        const gd=plotEl;
         if(!gd||!gd._fullLayout)return;
         const xaxis=gd._fullLayout.xaxis;
         const yaxis=gd._fullLayout.yaxis;
