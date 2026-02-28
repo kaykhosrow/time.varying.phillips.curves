@@ -97,13 +97,13 @@
       background:rgba(49,225,255,0.14);border-color:rgba(49,225,255,0.28);
       color:var(--accent);transform:none;box-shadow:0 0 12px rgba(49,225,255,0.25);
     }
-    #landing,#app{display:none;animation:fadeIn .4s.ease-out;}
+    #landing,#app{display:none;animation:fadeIn .4s ease-out;}
     #landing.active,#app.active{display:block;}
     @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
     @keyframes revealLine{0%{width:0;}100%{width:100%;}}
     @keyframes fadeInNote{0%{opacity:0;transform:translateY(3px);}100%{opacity:1;transform:translateY(0);}}
     .footer-line-animate{width:0;overflow:hidden;animation:revealLine .9s cubic-bezier(.4,0,.2,1) forwards;}
-    .footer-text-animate{opacity:0;animation:fadeInNote .5s.ease-out .7s forwards;}
+    .footer-text-animate{opacity:0;animation:fadeInNote .5s ease-out .7s forwards;}
     .app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;gap:12px;}
     .app-header-right{display:flex;flex-direction:row;align-items:center;gap:10px;}
     .plot-shell{margin-top:18px;display:flex;gap:18px;align-items:stretch;position:relative;}
@@ -111,7 +111,7 @@
     .slider-shell{width:110px;display:flex;flex-direction:column;align-items:center;}
     .slider-column{
       width:100%;flex:1 1 auto;border-radius:14px;
-      background:radial-gradient(circle at.bottom,rgba(49,225,255,0.1),transparent 55%);
+      background:radial-gradient(circle at bottom,rgba(49,225,255,0.1),transparent 55%);
       border:1px solid var(--border-subtle);padding:12px 4px 12px;
       display:flex;flex-direction:column;align-items:center;gap:8px;
     }
@@ -169,18 +169,25 @@
     #tv-val{
       background:#31e1ff;
       color:#05060a;
+      /* push right of dot; caret bridges the gap */
       margin-left:5px;
     }
+    /* caret drawn as an inline SVG-like pseudo, flush to bubble left edge */
     #tv-val::before{
       content:'';
       position:absolute;
+      /* sit exactly at left edge, vertically centred */
       right:100%;top:50%;
       transform:translateY(-50%);
+      /* right-pointing triangle that touches the bubble */
       border-top:5px solid transparent;
       border-bottom:5px solid transparent;
       border-right:6px solid #31e1ff;
+      /* overlap 1px so no gap between triangle and box */
       margin-right:-1px;
     }
+
+    /* Value bubble flipped: caret on RIGHT side when near right edge */
     #tv-val.flip::before{
       right:auto;
       left:100%;
@@ -204,6 +211,7 @@
       border-left:5px solid transparent;
       border-right:5px solid transparent;
       border-bottom:6px solid #6b7280;
+      /* overlap 1px upward so no gap */
       margin-bottom:-1px;
     }
   </style>
@@ -269,10 +277,11 @@
       </div>
       <div class="plot-shell">
         <div id="plot-wrapper" style="flex:1 1 auto;position:relative;">
-          <div id="plot" style="width:100%;min-height:520px;border-radius:14px;background:#050712;padding:6px 18px 6px 6px;overflow:hidden;"></div>
-          <!-- Speech-bubble overlays, coords are relative to plot-wrapper -->
-          <div id="tv-val"  class="tv-bubble"></div>
-          <div id="tv-date" class="tv-bubble"></div>
+          <div id="plot" style="width:100%;min-height:520px;border-radius:14px;background:#050712;padding:6px 18px 6px 6px;overflow:hidden;position:relative;">
+            <!-- Speech-bubble overlays — absolute within #plot, coords match Plotly margin coords -->
+            <div id="tv-val"  class="tv-bubble"></div>
+            <div id="tv-date" class="tv-bubble"></div>
+          </div>
         </div>
         <div class="slider-shell">
           <div class="slider-column">
@@ -288,12 +297,12 @@
     <div id="app-footer" style="display:none;margin-top:20px;">
       <div style="max-width:1120px;">
         <hr id="app-footer-hr" class="footer-line-animate" style="border:none;border-top:1px solid rgba(255,255,255,0.375);margin:0 0 18px 0;">
-        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0;font-size:0.71rem;color:rgba(255,255,255,0.50);line-height:1.8;text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46&#8211;65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129&#8211;149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394&#8211;415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50);text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
+        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0;font-size:0.71rem;color:rgba(255,255,255,0.50);line-height:1.8;text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46&#8211;65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129&#8211;149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394&#8211;415</a>. For further details or data provisions, please contact the developer at <a href="/cdn-cgi/l/email-protection#8fe0e2eefda1e4eef6e4e7fafcfdeef8cfe8e2eee6e3a1ece0e2" style="color:rgba(255,255,255,0.50);text-decoration:none;"><span class="__cf_email__" data-cfemail="6a05070b1844010b1301021f19180b1d2a0d070b030644090507">[email&#160;protected]</span></a>.</p>
       </div>
     </div>
   </div><!-- /.main-shell -->
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     function handleBgClick(e){}
 
     const REGION_COUNTRIES = {
@@ -521,147 +530,16 @@
       document.getElementById('tv-date').style.display='none';
     }
 
-    // ── Hover overlay: one SVG sitting over the plot, never recreated ───────
-    let _overlayReady = false;
-    let _overlayDot, _overlayLine;
-    let _currentDates=[], _currentEsts=[], _currentDateMs=[];
-    // *** CHANGED: keep track of current x-range in ms for simple linear mapping
-    let _xMinMs = 0;
-    let _xMaxMs = 0;
-
-    function ensureOverlay(){
-      if(_overlayReady) return;
-      const wrapper = document.getElementById('plot-wrapper');
-      wrapper.style.position = 'relative';
-
-      const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
-      svg.id = 'hover-overlay';
-      svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10;overflow:visible;';
-      wrapper.appendChild(svg);
-
-      _overlayLine = document.createElementNS('http://www.w3.org/2000/svg','line');
-      _overlayLine.setAttribute('stroke','rgba(49,225,255,0.25)');
-      _overlayLine.setAttribute('stroke-width','1');
-      _overlayLine.setAttribute('stroke-dasharray','3,3');
-      _overlayLine.style.display='none';
-      svg.appendChild(_overlayLine);
-
-      _overlayDot = document.createElementNS('http://www.w3.org/2000/svg','circle');
-      _overlayDot.setAttribute('r','5');
-      _overlayDot.setAttribute('fill','#31e1ff');
-      _overlayDot.setAttribute('stroke','#05060a');
-      _overlayDot.setAttribute('stroke-width','2');
-      _overlayDot.style.display='none';
-      svg.appendChild(_overlayDot);
-
-      wrapper.addEventListener('mousemove', onHoverMove);
-      wrapper.addEventListener('mouseleave', onHoverLeave);
-
-      _overlayReady = true;
-    }
-
-    // *** CHANGED: completely reworked mapping; no Plotly p2d/d2p usage
-    function onHoverMove(evt){
-      const plotEl = document.getElementById('plot');
-      if(!plotEl || !plotEl._fullLayout) return;
-      const xaxis = plotEl._fullLayout.xaxis;
-      const yaxis = plotEl._fullLayout.yaxis;
-      if(!xaxis || !yaxis || !_currentDates.length) return;
-
-      const margin = plotEl._fullLayout.margin;
-      const plotW  = xaxis._length;
-      const plotH  = yaxis._length;
-
-      const wRect = document.getElementById('plot-wrapper').getBoundingClientRect();
-      const pxX   = evt.clientX - wRect.left - margin.l;
-
-      if(pxX < 0 || pxX > plotW){ onHoverLeave(); return; }
-
-      // data x-range in ms (fall back to axis.range if needed)
-      let xMin = _xMinMs;
-      let xMax = _xMaxMs;
-      if(!xMin && !xMax && xaxis.range){
-        xMin = new Date(xaxis.range[0]).getTime();
-        xMax = new Date(xaxis.range[1]).getTime();
-      }
-      const spanX = (xMax - xMin) || 1;
-
-      // linear mapping from pixel to ms
-      const refMs = xMin + (pxX / plotW) * spanX;
-
-      // nearest date index
-      let nearest = 0, bestDist = Infinity;
-      _currentDateMs.forEach((ms,i)=>{
-        const d = Math.abs(ms - refMs);
-        if(d < bestDist){ bestDist = d; nearest = i; }
-      });
-
-      const hx   = _currentDates[nearest];
-      const hxMs = _currentDateMs[nearest];
-      const hy   = _currentEsts[nearest];
-
-      // x pixel for dot and line
-      const dotX = margin.l + ((hxMs - xMin) / spanX) * plotW;
-
-      // y mapping using axis range to align with Plotly
-      const yRange = yaxis.range || [
-        Math.min(..._currentEsts),
-        Math.max(..._currentEsts)
-      ];
-      const yMin = yRange[0];
-      const yMax = yRange[1];
-      const spanY = (yMax - yMin) || 1;
-      const relY  = (hy - yMin) / spanY;
-      const dotY  = margin.t + (1 - relY) * plotH;
-      const axisY = margin.t + plotH;
-
-      _overlayDot.setAttribute('cx', dotX);
-      _overlayDot.setAttribute('cy', dotY);
-      _overlayDot.style.display = '';
-
-      _overlayLine.setAttribute('x1', dotX); _overlayLine.setAttribute('y1', dotY);
-      _overlayLine.setAttribute('x2', dotX); _overlayLine.setAttribute('y2', axisY);
-      _overlayLine.style.display = '';
-
-      // value bubble
-      const vb = document.getElementById('tv-val');
-      vb.textContent = hy.toFixed(2);
-      vb.style.display = 'block';
-      const bubbleW = vb.offsetWidth;
-      const rightRoom = plotW - (dotX - margin.l);
-      if(rightRoom < bubbleW + 20){
-        vb.style.left = (dotX - bubbleW - 10) + 'px';
-        vb.classList.add('flip');
-      } else {
-        vb.style.left = (dotX + 10) + 'px';
-        vb.classList.remove('flip');
-      }
-      vb.style.top = (dotY - vb.offsetHeight/2) + 'px';
-
-      // date bubble
-      const db = document.getElementById('tv-date');
-      db.textContent = formatDateLabel(hx);
-      db.style.display = 'block';
-      const dbHalfW = db.offsetWidth / 2;
-      let dbLeft = dotX;
-      if(dbLeft - dbHalfW < margin.l)            dbLeft = margin.l + dbHalfW;
-      if(dbLeft + dbHalfW > margin.l + plotW)    dbLeft = margin.l + plotW - dbHalfW;
-      db.style.left = dbLeft + 'px';
-      db.style.top  = (axisY + 2) + 'px';
-    }
-
-    function onHoverLeave(){
-      if(_overlayDot)  _overlayDot.style.display  = 'none';
-      if(_overlayLine) _overlayLine.style.display = 'none';
-      hideTooltips();
+    function formatDateLabel(iso){
+      const d=new Date(iso+'T00:00:00');
+      return d.toLocaleDateString('en-GB',{month:'short',year:'numeric'});
     }
 
     function updatePlot(){
       if(!fullData.length) return;
       hideTooltips();
-      onHoverLeave();
 
-      const hNum     = getCurrentH1Numeric();
+      const hNum      = getCurrentH1Numeric();
       const kernelRaw = document.getElementById("kernel").value;
       const pcRaw     = document.getElementById("pcType").value;
       const estRaw    = document.getElementById("estimator").value;
@@ -683,16 +561,6 @@
       const ests  = subset.map(d=>parseFloat(d.estimate));
       const lower = subset.map(d=>parseFloat(d.lower));
       const upper = subset.map(d=>parseFloat(d.upper));
-      const dateMs = dates.map(d=>new Date(d).getTime());
-
-      _currentDates  = dates;
-      _currentEsts   = ests;
-      _currentDateMs = dateMs;
-
-      const xMin = dateMs[0], xMax = dateMs[dateMs.length-1];
-      // *** CHANGED: store x-range globally so hover uses same mapping as axis
-      _xMinMs = xMin;
-      _xMaxMs = xMax;
 
       Plotly.newPlot("plot",[
         {
@@ -702,8 +570,17 @@
           line:{color:"transparent"}, name:"CI", hoverinfo:"skip"
         },
         {
+          // Wide invisible line for easy hover capture
           x:dates, y:ests, mode:"lines", name:"",
-          line:{width:2, color:"#31e1ff"}, hoverinfo:"skip"
+          line:{width:24, color:"transparent"},
+          hoverinfo:"x+y", hoverlabel:{namelength:0},
+          showlegend:false
+        },
+        {
+          // Visible cyan line on top
+          x:dates, y:ests, mode:"lines", name:"",
+          line:{width:2, color:"#31e1ff"}, hoverinfo:"skip",
+          showlegend:false
         }
       ],{
         showlegend:false,
@@ -712,17 +589,81 @@
         uirevision:"locked",
         xaxis:{
           type:"date", tickformat:"%Y", tickangle:0, showgrid:false,
-          linecolor:"#3b3f55", nticks:7, fixedrange:true,
-          range:[new Date(xMin).toISOString(), new Date(xMax).toISOString()]
+          linecolor:"#3b3f55", nticks:7, fixedrange:true
         },
         yaxis:{
           zeroline:true, zerolinecolor:"#303548", showgrid:false,
           linecolor:"#3b3f55", tickformat:".2f", fixedrange:true
         },
-        hovermode:false
-      ],{responsive:true});
+        hovermode:"closest"
+      },{responsive:true});
 
-      ensureOverlay();
+      // gd is the Plotly graph div — .on() is registered by Plotly after newPlot
+      const gd = document.getElementById("plot");
+
+      gd.on("plotly_hover", function(eventData){
+        const pt = eventData.points.find(p => p.curveNumber === 1);
+        if(!pt) return;
+
+        const layout = gd._fullLayout;
+        const xaxis  = layout.xaxis;
+        const yaxis  = layout.yaxis;
+        const margin = layout.margin;
+        const plotH  = yaxis._length;
+        const plotW  = xaxis._length;
+
+        const hx   = pt.x;
+        const hy   = pt.y;
+        const hxMs = new Date(hx).getTime();
+
+        const dotPxX = margin.l + xaxis.d2p(hxMs);
+        const dotPxY = margin.t + yaxis.d2p(hy);
+        const axisY  = margin.t + plotH;
+
+        // Value bubble — positioned relative to #plot div
+        const vb = document.getElementById('tv-val');
+        vb.textContent = hy.toFixed(2);
+        vb.style.display = 'block';
+        const bubbleW = vb.offsetWidth;
+        if(plotW - (dotPxX - margin.l) < bubbleW + 20){
+          vb.style.left = (dotPxX - bubbleW - 10) + 'px';
+          vb.classList.add('flip');
+        } else {
+          vb.style.left = (dotPxX + 10) + 'px';
+          vb.classList.remove('flip');
+        }
+        vb.style.top = (dotPxY - vb.offsetHeight/2) + 'px';
+
+        // Date bubble
+        const db = document.getElementById('tv-date');
+        const isoStr = (typeof hx==='string') ? hx : new Date(hx).toISOString().slice(0,10);
+        db.textContent = formatDateLabel(isoStr);
+        db.style.display = 'block';
+        const dbHalfW = db.offsetWidth / 2;
+        let dbLeft = dotPxX;
+        if(dbLeft - dbHalfW < margin.l)         dbLeft = margin.l + dbHalfW;
+        if(dbLeft + dbHalfW > margin.l + plotW) dbLeft = margin.l + plotW - dbHalfW;
+        db.style.left = dbLeft + 'px';
+        db.style.top  = (axisY + 2) + 'px';
+
+        // Dot via Plotly annotation (fixedrange:true prevents any axis shift)
+        Plotly.relayout("plot",{
+          annotations:[{
+            x:hx, y:hy, xref:"x", yref:"y",
+            showarrow:false, text:"",
+            bgcolor:"#31e1ff",
+            width:10, height:10,
+            borderpad:5,
+            bordercolor:"#05060a",
+            borderwidth:2
+          }]
+        });
+      });
+
+      gd.on("plotly_unhover", function(){
+        hideTooltips();
+        Plotly.relayout("plot",{annotations:[]});
+      });
     }
   </script>
 </body>
