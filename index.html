@@ -605,13 +605,13 @@
     <div id="app-footer" style="display:none; margin-top: 20px;">
       <div style="max-width: 1120px;">
         <hr id="app-footer-hr" class="footer-line-animate" style="border:none; border-top: 1px solid rgba(255,255,255,0.375); margin: 0 0 18px 0;">
-        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="/cdn-cgi/l/email-protection#0f60626e7d21646e7664677a7c7d6e784f68626e6663216c6062" style="color:rgba(255,255,255,0.50); text-decoration:none;"><span class="__cf_email__" data-cfemail="adc2c0ccdf83c6ccd4c6c5d8dedfccdaedcac0ccc4c183cec2c0">[email&#160;protected]</span></a>.</p>
+        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
       </div>
     </div>
 
   </div>
 
-  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  <script>
     // Handle background click to go home — disabled
     function handleBgClick(e) {}
 
@@ -771,14 +771,12 @@
     let h1Values  = [];
     let coefBySpec = {};
 
-    // For axis-dot placement
-    let currentAxisBaselineY = null;
-
     function goBack() {
       document.getElementById("app").classList.remove("active");
       document.getElementById("app-footer").style.display = "none";
       const lc = document.getElementById("landing-credit");
       lc.style.display = "block";
+      // Re-animate the separator line only (not the wrapper)
       const lcLine = document.getElementById("landing-line");
       const lcP    = document.getElementById("landing-text");
       lcLine.classList.remove("footer-line-animate");
@@ -969,7 +967,7 @@
     function updatePlot() {
       if (!fullData.length) return;
 
-      const hNum      = getCurrentH1Numeric();
+      const hNum     = getCurrentH1Numeric();
       const kernelRaw = document.getElementById("kernel").value;
       const pcRaw     = document.getElementById("pcType").value;
       const estRaw    = document.getElementById("estimator").value;
@@ -995,156 +993,32 @@
       const lower = subset.map(d => parseFloat(d.lower));
       const upper = subset.map(d => parseFloat(d.upper));
 
-      const yVals = [...ests, ...lower, ...upper].filter(v => !isNaN(v));
-      let yMin = Math.min.apply(null, yVals);
-      let yMax = Math.max.apply(null, yVals);
-      const pad = (yMax - yMin) * 0.12 || 0.1;
-      yMin -= pad;
-      yMax += pad;
-      currentAxisBaselineY = yMin;
-
       Plotly.newPlot("plot", [
         {
           x: [...dates, ...dates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
           fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" }, name: "CI",
-          hoverinfo: "skip"
+          line: { color: "transparent" }, name: "CI"
         },
         {
           x: dates, y: ests, mode: "lines", name: "",
           line: { width: 2, color: "#31e1ff" }
-        },
-        {
-          // Highlighted data point + value label
-          x: [], y: [], mode: "markers+text", name: "",
-          marker: {
-            size: 7,
-            color: "#31e1ff",
-            line: { color: "#05060a", width: 2 }
-          },
-          text: [],
-          textposition: "middle right",
-          // push label further to the right so dot is clearly visible
-          textoffset: 14,
-          textfont: {
-            color: "#f5f5f7",
-            size: 11,
-            family: "system-ui, sans-serif"
-          },
-          cliponaxis: false,
-          hoverinfo: "skip"
-        },
-        {
-          // Dot on the x-axis at the hovered date
-          x: [], y: [], mode: "markers", name: "",
-          marker: {
-            size: 7,
-            color: "#31e1ff",
-            line: { color: "#05060a", width: 2 }
-          },
-          hoverinfo: "skip",
-          cliponaxis: false
         }
       ], {
         showlegend: false,
         paper_bgcolor: "#050712", plot_bgcolor: "#050712",
         margin: { l: 60, r: 40, t: 40, b: 50 },
         xaxis: {
-          type: "date",
-          tickformat: "%Y",
-          hoverformat: "%b %Y",
-          tickangle: 0,
-          showgrid: false,
-          linecolor: "#3b3f55",
-          nticks: 7,
-          showspikes: true,
-          spikecolor: "#31e1ff",
-          spikethickness: 1,
-          spikedash: "solid",
-          spikemode: "toaxis+marker",
-          spikesnap: "data",
-          tickpadding: 10
+          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
+          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
         },
         yaxis: {
-          zeroline: true,
-          zerolinecolor: "#303548",
-          showgrid: false,
-          linecolor: "#3b3f55",
-          tickformat: ".2f",
-          range: [yMin, yMax]
-        },
-        annotations: []
+          zeroline: true, zerolinecolor: "#303548",
+          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
+        }
       }, { responsive: true });
-
-      const plotEl = document.getElementById("plot");
-
-      plotEl.on("plotly_hover", function(data) {
-        const pt = data.points.find(p => p.curveNumber === 1);
-        if (!pt) return;
-
-        const d = new Date(pt.x);
-        const dateLabel = d.toLocaleString("en-GB", {
-          month: "short",
-          year: "numeric"
-        });
-        const val = pt.y.toFixed(2);
-
-        // Highlight the dot & value label (label pushed further right)
-        Plotly.restyle("plot", {
-          x: [[pt.x]],
-          y: [[pt.y]],
-          text: [[val]]
-        }, [2]);
-
-        // Dot on x-axis at the hovered date
-        Plotly.restyle("plot", {
-          x: [[pt.x]],
-          y: [[currentAxisBaselineY]]
-        }, [3]);
-
-        // Custom date box slightly below the x-axis
-        Plotly.relayout("plot", {
-          annotations: [{
-            x: pt.x,
-            xref: "x",
-            y: -0.05,
-            yref: "paper",
-            yshift: 20,           // move it slightly down from axis
-            text: dateLabel,
-            showarrow: false,
-            align: "center",
-            font: {
-              size: 11,
-              color: "#f5f5f7"
-            },
-            bgcolor: "rgba(5,7,18,0.96)",
-            bordercolor: "#3b3f55",
-            borderwidth: 1,
-            borderpad: 4,
-            opacity: 0.96
-          }]
-        });
-      });
-
-      plotEl.on("plotly_unhover", function() {
-        // Clear highlight dot + label
-        Plotly.restyle("plot", {
-          x: [[]],
-          y: [[]],
-          text: [[]]
-        }, [2]);
-
-        // Clear x-axis dot
-        Plotly.restyle("plot", {
-          x: [[]],
-          y: [[]]
-        }, [3]);
-
-        // Remove custom date annotation
-        Plotly.relayout("plot", { annotations: [] });
-      });
     }
   </script>
+
 </body>
 </html>
