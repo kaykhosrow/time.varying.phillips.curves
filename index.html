@@ -995,14 +995,31 @@
 
       Plotly.newPlot("plot", [
         {
+          // Confidence interval band
           x: [...dates, ...dates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
           fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" }, name: "CI"
+          line: { color: "transparent" }, name: "CI",
+          hoverinfo: "skip"
         },
         {
+          // Main time series line
           x: dates, y: ests, mode: "lines", name: "",
-          line: { width: 2, color: "#31e1ff" }
+          line: { width: 2, color: "#31e1ff" },
+          hoverinfo: "skip"
+        },
+        {
+          // Hover dot — starts invisible, snaps to line on hover
+          x: [null], y: [null],
+          mode: "markers", name: "",
+          marker: {
+            size: 9,
+            color: "#31e1ff",
+            line: { color: "#05060a", width: 2 },
+            symbol: "circle"
+          },
+          hoverinfo: "skip",
+          showlegend: false
         }
       ], {
         showlegend: false,
@@ -1015,8 +1032,71 @@
         yaxis: {
           zeroline: true, zerolinecolor: "#303548",
           showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
-        }
+        },
+        // Invisible hover layer that snaps to nearest x point on trace 1
+        hovermode: "x"
       }, { responsive: true });
+
+      const plotEl = document.getElementById("plot");
+
+      // Track closest point on the line via mousemove over the plot SVG
+      plotEl.addEventListener("mousemove", function(evt) {
+        const gd = plotEl;
+        if (!gd._fullLayout) return;
+
+        const xaxis = gd._fullLayout.xaxis;
+        const yaxis = gd._fullLayout.yaxis;
+        if (!xaxis || !yaxis) return;
+
+        // Convert pixel → data coords
+        const rect = plotEl.getBoundingClientRect();
+        const pxX  = evt.clientX - rect.left - gd._fullLayout.margin.l;
+
+        // Find nearest date index
+        const dataX = xaxis.p2d(pxX);
+        // dates are strings; convert to ms for comparison
+        const dataMs = typeof dataX === 'number' ? dataX : new Date(dataX).getTime();
+        let nearest = 0, bestDist = Infinity;
+        dates.forEach((d, i) => {
+          const ms = new Date(d).getTime();
+          const dist = Math.abs(ms - dataMs);
+          if (dist < bestDist) { bestDist = dist; nearest = i; }
+        });
+
+        const hx = dates[nearest];
+        const hy = ests[nearest];
+
+        // Move dot to nearest point
+        Plotly.restyle("plot", { x: [[hx]], y: [[hy]] }, [2]);
+
+        // Position annotation (value label) to the right of the dot
+        Plotly.relayout("plot", {
+          annotations: [{
+            x: hx,
+            y: hy,
+            xref: "x", yref: "y",
+            text: hy.toFixed(2),
+            showarrow: false,
+            xanchor: "left",
+            xshift: 14,
+            yanchor: "middle",
+            bgcolor: "#31e1ff",
+            borderpad: 5,
+            font: {
+              color: "#05060a",
+              size: 12,
+              family: "system-ui, -apple-system, sans-serif"
+            },
+            bordercolor: "transparent",
+            borderwidth: 0
+          }]
+        });
+      });
+
+      plotEl.addEventListener("mouseleave", function() {
+        Plotly.restyle("plot", { x: [[null]], y: [[null]] }, [2]);
+        Plotly.relayout("plot", { annotations: [] });
+      });
     }
   </script>
 
