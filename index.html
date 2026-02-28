@@ -764,8 +764,6 @@
     let fullData  = [];
     let h1Values  = [];
     let coefBySpec = {};
-    // y-baseline for x-axis marker
-    let currentAxisBaselineY = null;
 
     function goBack() {
       document.getElementById("app").classList.remove("active");
@@ -955,6 +953,7 @@
         "h = " + getCurrentH1Numeric().toFixed(1);
     }
 
+    /* === THIS is the only bit that’s really “new”: dot + label on the series === */
     function updatePlot() {
       if (!fullData.length) return;
 
@@ -973,10 +972,8 @@
 
       if (subset.length === 0) {
         Plotly.newPlot("plot", [], {
-          paper_bgcolor: "#050712",
-          plot_bgcolor: "#050712",
-          xaxis: { visible: false },
-          yaxis: { visible: false }
+          paper_bgcolor: "#050712", plot_bgcolor: "#050712",
+          xaxis: { visible: false }, yaxis: { visible: false }
         });
         return;
       }
@@ -986,38 +983,22 @@
       const lower = subset.map(d => parseFloat(d.lower));
       const upper = subset.map(d => parseFloat(d.upper));
 
-      const yVals = [...ests, ...lower, ...upper].filter(v => !isNaN(v));
-      let yMin = Math.min.apply(null, yVals);
-      let yMax = Math.max.apply(null, yVals);
-      const pad = (yMax - yMin) * 0.12 || 0.1;
-      yMin -= pad;
-      yMax += pad;
-      currentAxisBaselineY = yMin;  // use bottom of range as x-axis baseline for marker
-
       Plotly.newPlot("plot", [
         {
           x: [...dates, ...dates.slice().reverse()],
           y: [...upper, ...lower.slice().reverse()],
-          fill: "toself",
-          fillcolor: "rgba(49,225,255,0.12)",
-          line: { color: "transparent" },
-          name: "CI",
+          fill: "toself", fillcolor: "rgba(49,225,255,0.12)",
+          line: { color: "transparent" }, name: "CI",
           hoverinfo: "skip"
         },
         {
-          x: dates,
-          y: ests,
-          mode: "lines",
-          name: "",
+          x: dates, y: ests, mode: "lines", name: "",
           line: { width: 2, color: "#31e1ff" },
-          hoverinfo: "skip"      // no default hover box
+          hoverinfo: "skip"   // let x-axis spike/marker handle the date box
         },
         {
-          // highlight point + value label on the series
-          x: [],
-          y: [],
-          mode: "markers+text",
-          name: "",
+          // dot + estimate label that follows the cursor
+          x: [], y: [], mode: "markers+text", name: "",
           marker: {
             size: 7,
             color: "#31e1ff",
@@ -1025,7 +1006,7 @@
           },
           text: [],
           textposition: "middle right",
-          textoffset: 14,        // push label to the right of the dot
+          textoffset: 10,   // push label a bit to the right of the dot
           textfont: {
             color: "#f5f5f7",
             size: 11,
@@ -1033,25 +1014,10 @@
           },
           cliponaxis: false,
           hoverinfo: "skip"
-        },
-        {
-          // x-axis marker at hovered date
-          x: [],
-          y: [],
-          mode: "markers",
-          name: "",
-          marker: {
-            size: 7,
-            color: "#31e1ff",
-            line: { color: "#05060a", width: 2 }
-          },
-          cliponaxis: false,
-          hoverinfo: "skip"
         }
       ], {
         showlegend: false,
-        paper_bgcolor: "#050712",
-        plot_bgcolor: "#050712",
+        paper_bgcolor: "#050712", plot_bgcolor: "#050712",
         margin: { l: 60, r: 40, t: 40, b: 50 },
         xaxis: {
           type: "date",
@@ -1061,87 +1027,44 @@
           showgrid: false,
           linecolor: "#3b3f55",
           nticks: 7,
-          tickpadding: 10
-          // no spikes / vertical lines
+          tickpadding: 10,
+          // this gives you the original: vertical spike + marker + date box on the axis
+          showspikes: true,
+          spikecolor: "#31e1ff",
+          spikethickness: 1,
+          spikedash: "solid",
+          spikemode: "toaxis+marker",
+          spikesnap: "data"
         },
         yaxis: {
           zeroline: true,
           zerolinecolor: "#303548",
           showgrid: false,
           linecolor: "#3b3f55",
-          tickformat: ".2f",
-          range: [yMin, yMax]
-        },
-        annotations: []
+          tickformat: ".2f"
+        }
       }, { responsive: true });
 
       const plotEl = document.getElementById("plot");
 
       plotEl.on("plotly_hover", function(data) {
-        // point on the line trace
         const pt = data.points.find(p => p.curveNumber === 1);
         if (!pt) return;
+        const val = pt.y.toFixed(2);  // only the estimate in the small box
 
-        const val = pt.y.toFixed(2);  // only estimate in box
-        const d = new Date(pt.x);
-        const dateLabel = d.toLocaleString("en-GB", {
-          month: "short",
-          year: "numeric"
-        });
-
-        // dot + value label on the time series
         Plotly.restyle("plot", {
           x: [[pt.x]],
           y: [[pt.y]],
           text: [[val]]
-        }, [2]);
-
-        // marker on x-axis baseline
-        Plotly.restyle("plot", {
-          x: [[pt.x]],
-          y: [[currentAxisBaselineY]]
-        }, [3]);
-
-        // custom date box slightly below the x-axis
-        Plotly.relayout("plot", {
-          annotations: [{
-            x: pt.x,
-            xref: "x",
-            y: -0.05,
-            yref: "paper",
-            yshift: 20,
-            text: dateLabel,
-            showarrow: false,
-            align: "center",
-            font: {
-              size: 11,
-              color: "#f5f5f7"
-            },
-            bgcolor: "rgba(5,7,18,0.96)",
-            bordercolor: "#3b3f55",
-            borderwidth: 1,
-            borderpad: 4,
-            opacity: 0.96
-          }]
-        });
+        }, [2]); // update the markers+text trace
       });
 
       plotEl.on("plotly_unhover", function() {
-        // Clear series highlight
         Plotly.restyle("plot", {
           x: [[]],
           y: [[]],
           text: [[]]
         }, [2]);
-
-        // Clear x-axis marker
-        Plotly.restyle("plot", {
-          x: [[]],
-          y: [[]]
-        }, [3]);
-
-        // Remove date box
-        Plotly.relayout("plot", { annotations: [] });
       });
     }
   </script>
