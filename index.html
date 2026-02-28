@@ -772,6 +772,13 @@
     let coefBySpec = {};
 
     function goBack() {
+      // NEW: fully remove the plot so hover state doesn’t stick when coming back
+      try {
+        if (window.Plotly && document.getElementById("plot")) {
+          Plotly.purge("plot");
+        }
+      } catch (e) {}
+
       document.getElementById("app").classList.remove("active");
       document.getElementById("app-footer").style.display = "none";
       const lc = document.getElementById("landing-credit");
@@ -964,7 +971,7 @@
         "h = " + getCurrentH1Numeric().toFixed(1);
     }
 
-    // === ONLY CHANGE: add a hover dot trace + hover handlers ===
+    // === Plot with hover dot and locked axes ===
     function updatePlot() {
       if (!fullData.length) return;
 
@@ -1024,12 +1031,22 @@
         paper_bgcolor: "#050712", plot_bgcolor: "#050712",
         margin: { l: 60, r: 40, t: 40, b: 50 },
         xaxis: {
-          type: "date", tickformat: "%Y", hoverformat: "%b %Y",
-          tickangle: 0, showgrid: false, linecolor: "#3b3f55", nticks: 7
+          type: "date",
+          tickformat: "%Y",
+          hoverformat: "%b %Y",
+          tickangle: 0,
+          showgrid: false,
+          linecolor: "#3b3f55",
+          nticks: 7,
+          fixedrange: true  // prevent panning / gaps at edges
         },
         yaxis: {
-          zeroline: true, zerolinecolor: "#303548",
-          showgrid: false, linecolor: "#3b3f55", tickformat: ".2f"
+          zeroline: true,
+          zerolinecolor: "#303548",
+          showgrid: false,
+          linecolor: "#3b3f55",
+          tickformat: ".2f",
+          fixedrange: true  // lock vertical range too
         }
       }, { responsive: true });
 
