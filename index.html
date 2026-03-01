@@ -563,14 +563,21 @@
             <label for="regionSelector" class="control-label">Region:</label>
             <select id="regionSelector" onchange="onRegionChange(this.value)">
               <option value="euro-area">Euro Area</option>
+              <option value="western-europe">Western Europe</option>
+              <option value="northern-europe">Northern Europe</option>
+              <option value="southern-europe">Southern Europe</option>
+              <option value="eastern-europe">Eastern Europe</option>
+              <option value="north-america">North America</option>
             </select>
           </div>
           <div class="control-group landing-region-group" style="margin-left: -60px;">
             <label for="countrySelector" class="control-label">Country:</label>
             <select id="countrySelector" onchange="onCountryChange(this.value)">
-              <option value="">All</option>
+              <option value="ALL">All</option>
               <option value="AUT">Austria</option>
               <option value="BEL">Belgium</option>
+              <option value="BUL">Bulgaria</option>
+              <option value="CRO">Croatia</option>
               <option value="CYP">Cyprus</option>
               <option value="EST">Estonia</option>
               <option value="FIN">Finland</option>
@@ -588,6 +595,8 @@
               <option value="SVK">Slovakia</option>
               <option value="SVN">Slovenia</option>
               <option value="ESP">Spain</option>
+              <option value="GBR">United Kingdom</option>
+              <option value="USA">United States</option>
             </select>
           </div>
           <button type="button" class="primary-btn" style="padding: 8px 18px;" onclick="startApp()">Enter</button>
@@ -627,7 +636,7 @@
         <div class="app-header-right">
           <div class="pill">
             <span class="pill-dot"></span>
-            <span>Euro Area · Time-Varying Estimates</span>
+            <span id="appPillText">Euro Area · Time-Varying Estimates</span>
           </div>
           <button type="button" class="pill-button" onclick="goBack()">← Back</button>
         </div>
@@ -669,24 +678,60 @@
     <div id="app-footer" style="display:none; margin-top: 20px;">
       <div>
         <hr id="app-footer-hr" class="footer-line-animate" style="border:none; border-top: 1px solid rgba(255,255,255,0.375); margin: 0 0 18px 0;">
-        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L$, Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50); text-decoration:none;">omar.kaykhusraw@gmail.com</a>.</p>
+        <p id="app-footer-text" class="footer-text-animate" style="margin:0 0 4px 0; font-size:0.71rem; color:rgba(255,255,255,0.50); line-height:1.8; text-align:justify;"><b>Note</b>: Estimates generated using <a href="https://doi.org/10.1016/j.jeconom.2013.10.009" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2014) 'Inference on stochastic time-varying coefficient models', <em>Journal of Econometrics</em>, 179(1), pp.46–65</a>; <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L$, Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129–149</a>; and <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50); text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal&nbsp;of&nbsp;Econometrics</em>, 224(2),&nbsp;pp.394–415</a>. For further details or data provisions, please contact the developer at <a href="/cdn-cgi/l/email-protection#eb84868a99c5808a9280839e98998a9cab8c868a8287c5888486" style="color:rgba(255,255,255,0.50); text-decoration:none;"><span class="__cf_email__" data-cfemail="ee81838f9cc0858f9785869b9d9c8f99ae89838f8782c08d8183">[email&#160;protected]</span></a>.</p>
       </div>
     </div>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     function handleBgClick(e) {}
 
     const REGION_COUNTRIES = {
-      "euro-area": ["AUT","BEL","CYP","EST","FIN","FRA","DEU","GRC","IRL",
-                    "ITA","LVA","LTU","LUX","MLT","NLD","PRT","SVK","SVN","ESP"]
+      "euro-area":       ["AUT","BEL","CYP","EST","FIN","FRA","DEU","GRC","IRL",
+                          "ITA","LVA","LTU","LUX","MLT","NLD","PRT","SVK","SVN","ESP","BUL","CRO"],
+      "western-europe":  ["DEU","FRA","AUT","BEL","NLD","LUX","IRL","GBR"],
+      "northern-europe": ["FIN","EST","LVA","LTU"],
+      "southern-europe": ["ITA","ESP","PRT","GRC","CYP","MLT"],
+      "eastern-europe":  ["BUL","CRO","SVK","SVN"],
+      "north-america":   ["USA"]
     };
 
     const ISO_NAMES = {
-      "AUT":"Austria","BEL":"Belgium","CYP":"Cyprus","EST":"Estonia","FIN":"Finland",
-      "FRA":"France","DEU":"Germany","GRC":"Greece","IRL":"Ireland","ITA":"Italy",
-      "LVA":"Latvia","LTU":"Lithuania","LUX":"Luxembourg","MLT":"Malta","NLD":"Netherlands",
-      "PRT":"Portugal","SVK":"Slovakia","SVN":"Slovenia","ESP":"Spain"
+      "AUT":"Austria","BEL":"Belgium","BUL":"Bulgaria","CRO":"Croatia",
+      "CYP":"Cyprus","EST":"Estonia","FIN":"Finland","FRA":"France",
+      "DEU":"Germany","GRC":"Greece","IRL":"Ireland","ITA":"Italy",
+      "LVA":"Latvia","LTU":"Lithuania","LUX":"Luxembourg","MLT":"Malta",
+      "NLD":"Netherlands","PRT":"Portugal","SVK":"Slovakia","SVN":"Slovenia",
+      "ESP":"Spain","GBR":"United Kingdom","USA":"United States"
+    };
+
+    // Map ISO display codes -> R export codes -> CSV filenames
+    const ISO_TO_FILE = {
+      "ALL":"tvpc_eur",
+      "AUT":"tvpc_aus","BEL":"tvpc_bel","BUL":"tvpc_bul","CRO":"tvpc_cro",
+      "CYP":"tvpc_cyp","EST":"tvpc_est","FIN":"tvpc_fin","FRA":"tvpc_fra",
+      "DEU":"tvpc_ger","GRC":"tvpc_gre","IRL":"tvpc_ire","ITA":"tvpc_ita",
+      "LVA":"tvpc_lat","LTU":"tvpc_lit","LUX":"tvpc_lux","MLT":"tvpc_mal",
+      "NLD":"tvpc_net","PRT":"tvpc_por","SVK":"tvpc_slk","SVN":"tvpc_sln",
+      "ESP":"tvpc_spa","GBR":"tvpc_uk","USA":"tvpc_us"
+    };
+
+    const REGION_LABELS = {
+      "euro-area":       "Euro Area",
+      "western-europe":  "Western Europe",
+      "northern-europe": "Northern Europe",
+      "southern-europe": "Southern Europe",
+      "eastern-europe":  "Eastern Europe",
+      "north-america":   "North America"
+    };
+
+    const REGION_DEFAULT_COUNTRY = {
+      "euro-area":       "ALL",
+      "western-europe":  "DEU",
+      "northern-europe": "FIN",
+      "southern-europe": "ITA",
+      "eastern-europe":  "BUL",
+      "north-america":   "USA"
     };
 
     let mapReady = false;
@@ -700,8 +745,30 @@
     }
 
     function onRegionChange(value) {
-      document.getElementById('countrySelector').value = '';
+      const defaultCountry = REGION_DEFAULT_COUNTRY[value] || '';
+      populateCountrySelector(value);
+      document.getElementById('countrySelector').value = defaultCountry;
       highlightCodes(REGION_COUNTRIES[value] || []);
+    }
+
+    function populateCountrySelector(region) {
+      const sel = document.getElementById('countrySelector');
+      sel.innerHTML = '';
+      const codes = REGION_COUNTRIES[region] || [];
+
+      // Only add "All" aggregate for Euro Area
+      if (region === 'euro-area') {
+        const o = document.createElement('option');
+        o.value = 'ALL'; o.textContent = 'All';
+        sel.appendChild(o);
+      }
+
+      codes.forEach(iso => {
+        const o = document.createElement('option');
+        o.value = iso;
+        o.textContent = ISO_NAMES[iso] || iso;
+        sel.appendChild(o);
+      });
     }
 
     function onCountryChange(value) {
@@ -727,10 +794,11 @@
           const countries = topojson.feature(world, world.objects.countries);
 
           const numericToAlpha3 = {
-            "040":"AUT","056":"BEL","196":"CYP","233":"EST","246":"FIN",
-            "250":"FRA","276":"DEU","300":"GRC","372":"IRL","380":"ITA",
-            "428":"LVA","440":"LTU","442":"LUX","470":"MLT","528":"NLD",
-            "620":"PRT","703":"SVK","705":"SVN","724":"ESP"
+            "040":"AUT","056":"BEL","100":"BUL","191":"CRO","196":"CYP",
+            "233":"EST","246":"FIN","250":"FRA","276":"DEU","300":"GRC",
+            "372":"IRL","380":"ITA","428":"LVA","440":"LTU","442":"LUX",
+            "470":"MLT","528":"NLD","620":"PRT","703":"SVK","705":"SVN",
+            "724":"ESP","826":"GBR","840":"USA"
           };
 
           const filtered = {
@@ -803,6 +871,8 @@
             });
 
           mapReady = true;
+          populateCountrySelector('euro-area');
+          document.getElementById('countrySelector').value = 'ALL';
           highlightCodes(REGION_COUNTRIES['euro-area']);
         })
         .catch(() => {});
@@ -820,7 +890,7 @@
 
     window.addEventListener('resize', syncSliderLength);
 
-    const REGION_FILES = { "euro-area": "data/euro_area_tvpc_full.csv" };
+    // Files now loaded per country via ISO_TO_FILE lookup
 
     let fullData  = [];
     let h1Values  = [];
@@ -874,6 +944,7 @@
 
     function prettyCoef(raw) {
       const map = {
+        "const":       "Constant",
         "(Intercept)": "Constant",
         "dpi_lag1":    "Lagged inflation",
         "dpi_lead1":   "Lead inflation",
@@ -892,8 +963,18 @@
     }
 
     function startApp() {
-      const region = document.getElementById("regionSelector").value;
-      const file   = REGION_FILES[region];
+      const region  = document.getElementById("regionSelector").value;
+      const isoCode = document.getElementById("countrySelector").value || REGION_DEFAULT_COUNTRY[region];
+      const fileKey = ISO_TO_FILE[isoCode];
+      if (!fileKey) { alert("No data file found for " + isoCode); return; }
+      const file = "data/" + fileKey + ".csv";
+
+      // Update pill label
+      const countryName = isoCode === "ALL"
+        ? "All"
+        : (ISO_NAMES[isoCode] || isoCode);
+      document.getElementById("appPillText").textContent =
+        REGION_LABELS[region] + " · " + countryName;
 
       document.getElementById("app").classList.add("active");
       document.getElementById("landing-stage").style.display = "none";
@@ -931,16 +1012,17 @@
         const c = line.split(",");
         return {
           date:      parseDate(c[0]),
-          h1:        cleanValue(c[1]),
-          kernel:    cleanValue(c[2]),
-          pc_type:   cleanValue(c[3]),
-          estimator: cleanValue(c[4]),
+          pc_type:   cleanValue(c[1]),
+          estimator: cleanValue(c[2]),
+          kernel:    cleanValue(c[3]),
+          h1:        cleanValue(c[4]),
           coef:      cleanValue(c[5]),
           estimate:  cleanValue(c[6]),
           lower:     cleanValue(c[7]),
-          upper:     cleanValue(c[8])
+          upper:     cleanValue(c[8]),
+          hausman_p: cleanValue(c[9])
         };
-      }).filter(r => r && r.date !== "" && r.estimate !== "");
+      }).filter(r => r && r.date !== "" && (r.estimate !== "" || r.hausman_p !== ""));
     }
 
     function setupControls(data) {
@@ -962,6 +1044,7 @@
 
       coefBySpec = {};
       data.forEach(d => {
+        if (d.coef === "hausman") return; // exclude hausman rows from coef selector
         if (!coefBySpec[d.pc_type]) coefBySpec[d.pc_type] = new Set();
         coefBySpec[d.pc_type].add(d.coef);
       });
@@ -1003,7 +1086,7 @@
       const sel   = document.getElementById("coef");
       sel.innerHTML = "";
 
-      const order = ["(Intercept)", "dpi_lag1", "dpi_lead1", "du"];
+      const order = ["const", "(Intercept)", "dpi_lag1", "dpi_lead1", "du"];
       const ordered = [
         ...order.filter(k => coefs.includes(k)),
         ...coefs.filter(c => !order.includes(c))
@@ -1144,17 +1227,4 @@
           if (!pt) return;
 
           Plotly.restyle(gd, {
-            x: [[pt.x]],
-            y: [[pt.y]],
-            opacity: [1]
-          }, [2]);
-        });
-
-        // NOTE: we no longer listen to plotly_unhover,
-        // so the dot stays where it is even when clicking.
-      });
-    }
-  </script>
-
-</body>
-</html>
+            x
