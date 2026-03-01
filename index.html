@@ -859,7 +859,7 @@
     function prettyPcType(raw) {
       if (!raw) return raw;
       const r = raw.toLowerCase();
-      if (r === "standard") return "Standard Phillips Curve";
+      if (r === "standard") return "Traditional Phillips Curve";
       if (r === "nk")       return "New Keynesian Phillips Curve";
       return raw.charAt(0).toUpperCase() + raw.slice(1);
     }
