@@ -147,13 +147,13 @@
           <a href="https://doi.org/10.1111/jtsa.12271" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Yates, T. (2018) 'Inference on multivariate heteroscedastic time varying random coefficient models', <em>Journal of Time Series Analysis</em>, 39(2), pp.129-149</a>; and
           <a href="https://doi.org/10.1016/j.jeconom.2020.08.013" target="_blank" style="color:rgba(255,255,255,0.50);text-decoration:none;">Giraitis, L., Kapetanios, G. and Marcellino, M. (2021) 'Time-varying instrumental variable estimation', <em>Journal of Econometrics</em>, 224(2), pp.394-415</a>.
           For further details or data provisions, please contact the developer at
-          <a href="mailto:omar.kaykhusraw@gmail.com" style="color:rgba(255,255,255,0.50);text-decoration:none;">omar.kaykhusraw@gmail.com</a>.
+          <a href="/cdn-cgi/l/email-protection#3f50525e4d11545e4654574a4c4d5e487f58525e5653115c5052" style="color:rgba(255,255,255,0.50);text-decoration:none;"><span class="__cf_email__" data-cfemail="ee81838f9cc0858f9785869b9d9c8f99ae89838f8782c08d8183">[email&#160;protected]</span></a>.
         </p>
       </div>
     </div>
   </div>
 
-  <script>
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
     function handleBgClick(e) {}
 
     var REGION_MAP_CODES = {
@@ -298,7 +298,7 @@
 
           mapReady = true;
           populateCountrySelector('europe');
-          highlightCodes(REGION_MAP_CODES['europe']);
+          highlightCodes(['AUT']);
         }).catch(function() {});
     });
 
@@ -459,10 +459,11 @@
       };
       Plotly.newPlot(plotDiv,traces,layout,{responsive:true}).then(function(gd){
         gd.removeAllListeners('plotly_hover');
-        gd.on('plotly_hover',function(ev){
-          var pt=ev.points.find(function(p){return p.curveNumber===1;});
-          if(!pt) return;
-          Plotly.restyle(gd,{x:[[pt.x]],y:[[pt.y]],opacity:[1]},[2]);
+        gd.o
+        gd.on('plotly_hover', function(ev) {
+          var pt = ev.points.find(function(p) { return p.curveNumber === 1; });
+          if (!pt) return;
+          Plotly.restyle(gd, {x:[[pt.x]], y:[[pt.y]], opacity:[1]}, [2]);
         });
       });
     }
